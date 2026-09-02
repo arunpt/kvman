@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-import 'package:kvman/app/router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PhoneEntryScreen extends StatefulWidget {
-  const new({super.key});
+class PhoneEntryScreen extends ConsumerStatefulWidget {
+  const PhoneEntryScreen({super.key});
 
   @override
-  State<PhoneEntryScreen> createState() => _PhoneEntryScreenState();
+  ConsumerState<PhoneEntryScreen> createState() => _PhoneEntryScreenState();
 }
 
-class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
+class _PhoneEntryScreenState extends ConsumerState<PhoneEntryScreen> {
   final formKey = GlobalKey<FormState>();
   final phoneController = TextEditingController();
+  bool _isLoading = false;
 
   String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
@@ -26,8 +26,9 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
 
   Future<void> sendOtp() async {
     if (!formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
     final phone = phoneController.text.trim();
-    context.go(AppRoutes.pinEntry, extra: phone);
+    // call API to send OTP
   }
 
   @override
@@ -87,19 +88,25 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(
-                    onPressed: () => sendOtp(),
+                    onPressed: _isLoading ? null : sendOtp,
                     style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Generate OTP',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          )
+                        : const Text(
+                            'Generate OTP',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
