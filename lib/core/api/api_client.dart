@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kvman/core/utils/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final dioProvider = Provider<Dio>((ref) {
@@ -24,6 +25,10 @@ final dioProvider = Provider<Dio>((ref) {
       },
       onError: (DioException e, handler) async {
         handler.next(e);
+      },
+      onResponse: (response, handler) {
+        logger.d('Response [${response.statusCode}]: ${response.data}');
+        handler.next(response);
       },
     ),
   );

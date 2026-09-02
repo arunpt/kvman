@@ -40,7 +40,12 @@ class AuthRepository {
     if (data is! Map<String, dynamic>) {
       throw AuthException(data.toString().replaceAll('"', ''));
     }
-    return data['Token'] as String;
+    
+    String token = data['Token'] as String;
+    if (token.endsWith('~0')) {
+      token = token.substring(0, token.length - 2);
+    }
+    return token;
   }
 
   Future<List<KvUser>> fetchUsersList(String mobileNumber) async {
