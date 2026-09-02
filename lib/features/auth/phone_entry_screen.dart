@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kvman/app/router.dart';
+import 'package:kvman/features/auth/auth_repository.dart';
 
 class PhoneEntryScreen extends ConsumerStatefulWidget {
   const PhoneEntryScreen({super.key});
@@ -28,7 +31,28 @@ class _PhoneEntryScreenState extends ConsumerState<PhoneEntryScreen> {
     if (!formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     final phone = phoneController.text.trim();
-    // call API to send OTP
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final response = await authRepo.generateOtp(phone);
+
+      if (!mounted) return;
+
+      if (response.isSuccess) {
+        context.push(AppRoutes.pinEntry, extra: phone);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.returnMessage)),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to send OTP. Please try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override

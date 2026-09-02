@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kvman/features/auth/auth_notifier.dart';
+import 'package:kvman/features/auth/auth_repository.dart';
 import 'package:pinput/pinput.dart';
 
 class PinEntryScreen extends ConsumerStatefulWidget {
@@ -35,7 +37,36 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
 
   Future<void> _verifyOtp(String pin) async {
     setState(() => _isLoading = true);
-    // validate OTP
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final token = await authRepo.verifyOtp(
+        mobileNumber: widget.phoneNumber,
+        otp: pin,
+      );
+
+      if (!mounted) return;
+
+      await ref.read(authNotifierProvider.notifier).login(
+            token: token,
+            phoneNumber: widget.phoneNumber,
+          );
+      // Router redirect will automatically navigate to home
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      pinController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      pinController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong. Please try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override

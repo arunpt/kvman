@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kvman/features/auth/auth_notifier.dart';
 import 'package:kvman/features/auth/phone_entry_screen.dart';
 import 'package:kvman/features/auth/pin_entry_screen.dart';
 import 'package:kvman/features/home/home_screen.dart';
@@ -19,19 +20,25 @@ class AppRoutes {
 final titles = {0: 'KVMAN', 1: 'Usage', 2: 'Profile'};
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+
   return GoRouter(
     initialLocation: AppRoutes.home,
-    // redirect: (context, state) {
-    //   final goingToAuth = state.matchedLocation.startsWith('/auth');
+    redirect: (context, state) {
+      // While auth state is loading, don't redirect
+      if (authState.isLoading) return null;
 
-    //   if (!isAuthenticated && !goingToAuth) {
-    //     return AppRoutes.phoneEntry;
-    //   }
-    //   if (isAuthenticated && goingToAuth) {
-    //     return AppRoutes.home;
-    //   }
-    //   return null;
-    // },
+      final isAuthenticated = authState.isAuthenticated;
+      final goingToAuth = state.matchedLocation.startsWith('/auth');
+
+      if (!isAuthenticated && !goingToAuth) {
+        return AppRoutes.phoneEntry;
+      }
+      if (isAuthenticated && goingToAuth) {
+        return AppRoutes.home;
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: AppRoutes.phoneEntry,
