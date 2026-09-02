@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/core/api/api_client.dart';
 import 'package:kvman/features/auth/otp_response.dart';
+import 'package:kvman/features/auth/kv_user.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(dioProvider));
@@ -40,6 +41,33 @@ class AuthRepository {
       throw AuthException(data.toString().replaceAll('"', ''));
     }
     return data['Token'] as String;
+  }
+
+  Future<List<KvUser>> fetchUsersList(String mobileNumber) async {
+    final response = await _dio.post(
+      '/UsersList',
+      data: {
+        'UserListParameter': {
+          'Mobile': mobileNumber,
+          'Type': 'Customer',
+        }
+      },
+    );
+
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw const AuthException("Failed to fetch users");
+    }
+
+    final returnCode = data['returnCode'];
+    if (returnCode != 0) {
+      throw AuthException(data['returnMessage']?.toString() ?? "Failed to fetch users");
+    }
+
+    final details = data['UserListDetails'] as List<dynamic>?;
+    if (details == null || details.isEmpty) return [];
+
+    return details.map((e) => KvUser.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
 

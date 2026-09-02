@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/features/auth/auth_notifier.dart';
 import 'package:kvman/features/auth/auth_repository.dart';
 import 'package:pinput/pinput.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PinEntryScreen extends ConsumerStatefulWidget {
   const PinEntryScreen({super.key, required this.phoneNumber});
@@ -44,12 +45,20 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
         mobileNumber: widget.phoneNumber,
         otp: pin,
       );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      final users = await authRepo.fetchUsersList(widget.phoneNumber);
+      if (users.isEmpty) {
+        await prefs.remove('auth_token'); // Rollback token
+        throw const AuthException('No accounts found for this number.');
+      }
 
       if (!mounted) return;
 
       await ref.read(authNotifierProvider.notifier).login(
             token: token,
             phoneNumber: widget.phoneNumber,
+            users: users,
           );
       // Router redirect will automatically navigate to home
     } on AuthException catch (e) {
