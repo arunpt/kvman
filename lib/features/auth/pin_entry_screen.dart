@@ -47,6 +47,10 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
       );
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
+      await prefs.setInt(
+        'token_generated_time',
+        DateTime.now().millisecondsSinceEpoch.toInt(),
+      );
       final users = await authRepo.fetchUsersList(widget.phoneNumber);
       if (users.isEmpty) {
         await prefs.remove('auth_token'); // Rollback token

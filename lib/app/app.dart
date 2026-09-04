@@ -4,14 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/app/router.dart';
 import 'package:kvman/app/theme.dart';
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class KvManApp extends ConsumerWidget {
-  const new({super.key});
+  const KvManApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) => MaterialApp.router(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         darkTheme: AppTheme.dark(darkDynamic),
         theme: AppTheme.light(lightDynamic),
         themeMode: ThemeMode.system,

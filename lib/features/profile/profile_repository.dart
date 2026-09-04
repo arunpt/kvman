@@ -27,9 +27,9 @@ class ProfileRepository {
       throw Exception('Invalid response format');
     }
 
-    final returnCode = data['ReturnCode'];
-    if (returnCode != 0) {
-      throw Exception(data['ReturnMessage']?.toString() ?? 'Failed to fetch customer details');
+    final status = data['ReturnMessage'];
+    if (status != 'Success') {
+      throw Exception('Failed to fetch customer details: $status');
     }
 
     final customerDetailJson = data['CustomerDetail'];

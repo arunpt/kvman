@@ -156,6 +156,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             _buildDetailRow(context, 'Address', customer.address),
             _buildDetailRow(context, 'Permanent Address', customer.permanentAddress),
+            _buildDetailRow(context, 'Partner Name', customer.partnerName),
           ],
         ),
       ),

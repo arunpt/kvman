@@ -8,6 +8,7 @@ class CustomerDetail {
   final String address;
   final String permanentAddress;
   final String? aadharNumber;
+  final String partnerName;
   final String ekycStatus;
 
   const CustomerDetail({
@@ -21,6 +22,7 @@ class CustomerDetail {
     required this.permanentAddress,
     this.aadharNumber,
     required this.ekycStatus,
+    required this.partnerName,
   });
 
   factory CustomerDetail.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class CustomerDetail {
       permanentAddress: json['ParmenentAddress']?.toString() ?? '',
       aadharNumber: json['AadharNumber']?.toString(),
       ekycStatus: json['EkycStatus']?.toString() ?? '',
+      partnerName: json['PartnerName']?.toString() ?? '',
     );
   }
 }
