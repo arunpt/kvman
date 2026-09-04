@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kvman/features/auth/auth_notifier.dart';
 import 'package:kvman/features/auth/phone_entry_screen.dart';
 import 'package:kvman/features/auth/pin_entry_screen.dart';
+import 'package:kvman/features/auth/forgot_password_screen.dart';
 import 'package:kvman/features/home/home_screen.dart';
 import 'package:kvman/features/profile/profile_screen.dart';
 import 'package:kvman/features/usage/usage_screen.dart';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const usage = '/usage';
   static const phoneEntry = '/auth/phone';
   static const pinEntry = '/auth/pin';
+  static const forgotPassword = '/auth/forgot-password';
   static const profile = '/profile';
 }
 
@@ -50,6 +52,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final phoneNumber = state.extra as String;
           return PinEntryScreen(phoneNumber: phoneNumber);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Scaffold(

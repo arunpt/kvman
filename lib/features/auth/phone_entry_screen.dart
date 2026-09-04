@@ -132,6 +132,11 @@ class _PhoneEntryScreenState extends ConsumerState<PhoneEntryScreen> {
                           ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _isLoading ? null : () => context.push(AppRoutes.forgotPassword),
+                  child: const Text('Forgot Password?'),
+                ),
               ],
             ),
           ),
