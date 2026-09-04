@@ -8,7 +8,9 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository(ref.watch(dioProvider));
 });
 
-final customerDetailProvider = FutureProvider.autoDispose<CustomerDetail>((ref) {
+final customerDetailProvider = FutureProvider.autoDispose<CustomerDetail>((
+  ref,
+) {
   // Re-fetch if auth state (like the active user token) changes
   ref.watch(authNotifierProvider);
   return ref.read(profileRepositoryProvider).fetchCustomerDetail();
@@ -22,7 +24,7 @@ class ProfileRepository {
   Future<CustomerDetail> fetchCustomerDetail() async {
     final response = await _dio.post('/CustomerDetail');
     final data = response.data;
-    
+
     if (data is! Map<String, dynamic>) {
       throw Exception('Invalid response format');
     }
@@ -33,11 +35,11 @@ class ProfileRepository {
     }
 
     final customerDetailJson = data['CustomerDetail'];
-    if (customerDetailJson == null || customerDetailJson is! Map<String, dynamic>) {
+    if (customerDetailJson == null ||
+        customerDetailJson is! Map<String, dynamic>) {
       throw Exception('Customer details not found in response');
     }
 
     return CustomerDetail.fromJson(customerDetailJson);
   }
 }
-

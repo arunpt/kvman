@@ -33,19 +33,28 @@ class ProfileScreen extends ConsumerWidget {
                     child: Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Colors.red,
+                          ),
                           const SizedBox(height: 16),
-                          Text('Error loading details: $err', textAlign: TextAlign.center),
+                          Text(
+                            'Error loading details: $err',
+                            textAlign: TextAlign.center,
+                          ),
                           const SizedBox(height: 16),
                           FilledButton.tonal(
-                            onPressed: () => ref.refresh(customerDetailProvider),
+                            onPressed: () =>
+                                ref.refresh(customerDetailProvider),
                             child: const Text('Retry'),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  data: (customer) => _buildCustomerDetailCard(context, customer),
+                  data: (customer) =>
+                      _buildCustomerDetailCard(context, customer),
                 ),
 
                 const SizedBox(height: 32),
@@ -56,7 +65,10 @@ class ProfileScreen extends ConsumerWidget {
                     padding: EdgeInsets.only(left: 8, bottom: 8),
                     child: Text(
                       'Switch Account',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   Card(
@@ -69,18 +81,27 @@ class ProfileScreen extends ConsumerWidget {
                           leading: CircleAvatar(
                             backgroundColor: isActive
                                 ? Theme.of(context).colorScheme.primaryContainer
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
-                            child: Text(u.userName.substring(0, 1).toUpperCase()),
+                                : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
+                            child: Text(
+                              u.userName.substring(0, 1).toUpperCase(),
+                            ),
                           ),
                           title: Text(u.userName),
                           subtitle: Text(u.customerId),
                           trailing: isActive
-                              ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: Theme.of(context).colorScheme.primary,
+                                )
                               : null,
                           onTap: isActive
                               ? null
                               : () {
-                                  ref.read(authNotifierProvider.notifier).switchUser(u.id);
+                                  ref
+                                      .read(authNotifierProvider.notifier)
+                                      .switchUser(u.id);
                                 },
                         );
                       }).toList(),
@@ -92,7 +113,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         // Pinned Logout Button
         SafeArea(
           top: false,
@@ -112,7 +133,10 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCustomerDetailCard(BuildContext context, CustomerDetail customer) {
+  Widget _buildCustomerDetailCard(
+    BuildContext context,
+    CustomerDetail customer,
+  ) {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -120,15 +144,13 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const CircleAvatar(
-              radius: 48,
-              child: Icon(Icons.person, size: 48),
-            ),
+            const CircleAvatar(radius: 48, child: Icon(Icons.person, size: 48)),
             const SizedBox(height: 16),
             Text(
               customer.name,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (customer.email.isNotEmpty)
               Text(
@@ -149,13 +171,31 @@ class ProfileScreen extends ConsumerWidget {
             const Divider(),
             const SizedBox(height: 16),
             _buildDetailRow(context, 'User ID', customer.userId),
-            _buildDetailRow(context, 'MAC Address', customer.macId.isEmpty ? 'N/A' : customer.macId),
-            _buildDetailRow(context, 'GST Number', customer.gstNumber.isEmpty ? 'N/A' : customer.gstNumber),
-            _buildDetailRow(context, 'Aadhar', customer.aadharNumber?.isEmpty ?? true ? 'N/A' : customer.aadharNumber!),
+            _buildDetailRow(
+              context,
+              'MAC Address',
+              customer.macId.isEmpty ? 'N/A' : customer.macId,
+            ),
+            _buildDetailRow(
+              context,
+              'GST Number',
+              customer.gstNumber.isEmpty ? 'N/A' : customer.gstNumber,
+            ),
+            _buildDetailRow(
+              context,
+              'Aadhar',
+              customer.aadharNumber?.isEmpty ?? true
+                  ? 'N/A'
+                  : customer.aadharNumber!,
+            ),
             _buildDetailRow(context, 'Ekyc Status', customer.ekycStatus),
             const SizedBox(height: 8),
             _buildDetailRow(context, 'Address', customer.address),
-            _buildDetailRow(context, 'Permanent Address', customer.permanentAddress),
+            _buildDetailRow(
+              context,
+              'Permanent Address',
+              customer.permanentAddress,
+            ),
             _buildDetailRow(context, 'Partner Name', customer.partnerName),
           ],
         ),

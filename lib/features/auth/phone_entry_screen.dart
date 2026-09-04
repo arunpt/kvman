@@ -41,9 +41,8 @@ class _PhoneEntryScreenState extends ConsumerState<PhoneEntryScreen> {
       if (response.isSuccess) {
         context.push(AppRoutes.pinEntry, extra: phone);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.returnMessage)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(response.returnMessage)));
       }
     } catch (e) {
       if (!mounted) return;

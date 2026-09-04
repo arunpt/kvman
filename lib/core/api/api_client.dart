@@ -30,7 +30,9 @@ final dioProvider = Provider<Dio>((ref) {
         final dataStr = e.response?.data?.toString() ?? '';
         if (dataStr.contains('Invalid token')) {
           rootScaffoldMessengerKey.currentState?.showSnackBar(
-            const SnackBar(content: Text('Session expired. Please login again.')),
+            const SnackBar(
+              content: Text('Session expired. Please login again.'),
+            ),
           );
           ref.read(authNotifierProvider.notifier).logout();
         } else if (dataStr.contains('no rights')) {
@@ -40,13 +42,15 @@ final dioProvider = Provider<Dio>((ref) {
       },
       onResponse: (response, handler) async {
         logger.d('Response [${response.statusCode}]: ${response.data}');
-        
+
         final dataStr = response.data?.toString() ?? '';
-        
+
         // 1. Session Invalidation
         if (dataStr.contains('Invalid token')) {
           rootScaffoldMessengerKey.currentState?.showSnackBar(
-            const SnackBar(content: Text('Session expired. Please login again.')),
+            const SnackBar(
+              content: Text('Session expired. Please login again.'),
+            ),
           );
           ref.read(authNotifierProvider.notifier).logout();
           return handler.next(response);
@@ -60,38 +64,43 @@ final dioProvider = Provider<Dio>((ref) {
         if (!response.requestOptions.path.contains('/ReGenarateToken')) {
           final authState = ref.read(authNotifierProvider);
           final genTime = authState.tokenGeneratedTime;
-          
+
           if (genTime != null) {
             final ageMinutes = DateTime.now().difference(genTime).inMinutes;
             if (ageMinutes >= 15 && ageMinutes <= 30) {
               final username = authState.activeUser?.userName;
               final currentToken = authState.token;
-              
+
               if (username != null && currentToken != null) {
                 try {
-                  final refreshDio = Dio(BaseOptions(
-                    baseUrl: response.requestOptions.baseUrl,
-                    connectTimeout: const Duration(seconds: 10),
-                    receiveTimeout: const Duration(seconds: 10),
-                  ));
-                  
-                  final refreshRes = await refreshDio.post(
-                    '/ReGenarateToken',
-                    data: { 'Username': username },
-                    options: Options(
-                      headers: { 'Authorization': 'Bearer $currentToken' }
+                  final refreshDio = Dio(
+                    BaseOptions(
+                      baseUrl: response.requestOptions.baseUrl,
+                      connectTimeout: const Duration(seconds: 10),
+                      receiveTimeout: const Duration(seconds: 10),
                     ),
                   );
-                  
+
+                  final refreshRes = await refreshDio.post(
+                    '/ReGenarateToken',
+                    data: {'Username': username},
+                    options: Options(
+                      headers: {'Authorization': 'Bearer $currentToken'},
+                    ),
+                  );
+
                   if (refreshRes.statusCode == 200 && refreshRes.data != null) {
                     final resData = refreshRes.data;
-                    if (resData is Map<String, dynamic> && resData.containsKey('Token')) {
+                    if (resData is Map<String, dynamic> &&
+                        resData.containsKey('Token')) {
                       String newToken = resData['Token'] as String;
                       if (newToken.endsWith('~0')) {
                         newToken = newToken.substring(0, newToken.length - 2);
                       }
                       if (newToken.isNotEmpty) {
-                        await ref.read(authNotifierProvider.notifier).updateToken(newToken);
+                        await ref
+                            .read(authNotifierProvider.notifier)
+                            .updateToken(newToken);
                       }
                     }
                   }
@@ -102,7 +111,7 @@ final dioProvider = Provider<Dio>((ref) {
             }
           }
         }
-        
+
         handler.next(response);
       },
     ),

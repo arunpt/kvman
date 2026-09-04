@@ -59,23 +59,22 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
 
       if (!mounted) return;
 
-      await ref.read(authNotifierProvider.notifier).login(
-            token: token,
-            phoneNumber: widget.phoneNumber,
-            users: users,
-          );
+      await ref
+          .read(authNotifierProvider.notifier)
+          .login(token: token, phoneNumber: widget.phoneNumber, users: users);
       // Router redirect will automatically navigate to home
     } on AuthException catch (e) {
       if (!mounted) return;
       pinController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
       pinController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong. Please try again.')),
+        const SnackBar(
+          content: Text('Something went wrong. Please try again.'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

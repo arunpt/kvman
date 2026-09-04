@@ -40,7 +40,7 @@ class AuthRepository {
     if (data is! Map<String, dynamic>) {
       throw AuthException(data.toString().replaceAll('"', ''));
     }
-    
+
     String token = data['Token'] as String;
     if (token.endsWith('~0')) {
       token = token.substring(0, token.length - 2);
@@ -52,10 +52,7 @@ class AuthRepository {
     final response = await _dio.post(
       '/UsersList',
       data: {
-        'UserListParameter': {
-          'Mobile': mobileNumber,
-          'Type': 'Customer',
-        }
+        'UserListParameter': {'Mobile': mobileNumber, 'Type': 'Customer'},
       },
     );
 
@@ -66,13 +63,17 @@ class AuthRepository {
 
     final returnCode = data['returnCode'];
     if (returnCode != 0) {
-      throw AuthException(data['returnMessage']?.toString() ?? "Failed to fetch users");
+      throw AuthException(
+        data['returnMessage']?.toString() ?? "Failed to fetch users",
+      );
     }
 
     final details = data['UserListDetails'] as List<dynamic>?;
     if (details == null || details.isEmpty) return [];
 
-    return details.map((e) => KvUser.fromJson(e as Map<String, dynamic>)).toList();
+    return details
+        .map((e) => KvUser.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }
 

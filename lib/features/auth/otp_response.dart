@@ -22,4 +22,3 @@ class OtpResponse {
 
   bool get isSuccess => returnCode == 0;
 }
-

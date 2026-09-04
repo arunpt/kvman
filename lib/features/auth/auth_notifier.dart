@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kvman/features/auth/kv_user.dart';
@@ -10,8 +11,9 @@ const _activeUserIdKey = 'auth_active_user_id';
 const _tokenGenTimeKey = 'auth_token_gen_time';
 const _prevTokenKey = 'auth_prev_token';
 
-final authNotifierProvider =
-    NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
 class AuthState {
   final bool isAuthenticated;
@@ -48,7 +50,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final phone = prefs.getString(_phoneKey);
     final usersStr = prefs.getString(_usersKey);
     final activeUserId = prefs.getString(_activeUserIdKey);
-    
+
     final genTimeMs = prefs.getInt(_tokenGenTimeKey);
     final prevToken = prefs.getString(_prevTokenKey);
     DateTime? genTime;
@@ -152,7 +154,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, prev);
       await prefs.remove(_prevTokenKey);
-      
+
       state = AuthState(
         isAuthenticated: state.isAuthenticated,
         isLoading: state.isLoading,
