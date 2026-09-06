@@ -1,9 +1,8 @@
-import 'package:go_router/go_router.dart';
-
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kvman/features/home/home_repository.dart';
 import 'package:kvman/features/home/subscriber_plan.dart';
@@ -59,6 +58,8 @@ class HomeScreen extends ConsumerWidget {
                       _buildDataUsageCard(context, ref, customerData, isDark),
                       const SizedBox(height: 16),
                       _buildExpiryCard(context, customerData, isDark),
+                      const SizedBox(height: 24),
+                      _buildQuickActions(context, isDark),
                     ],
                   ),
                   loading: () => Column(
@@ -849,6 +850,38 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            'Quick Actions',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.tonalIcon(
+                onPressed: () => context.push('/diagnostics'),
+                icon: const Icon(Icons.router),
+                label: const Text('Router Diagnostics'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
