@@ -59,7 +59,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Scaffold(
-          appBar: AppBar(title: Text(titles[navigationShell.currentIndex]!)),
+          appBar: AppBar(title: Text(titles[navigationShell.currentIndex]!, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)),
           body: navigationShell,
           bottomNavigationBar: NavigationBar(
             selectedIndex: navigationShell.currentIndex,

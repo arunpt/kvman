@@ -67,7 +67,7 @@ final dioProvider = Provider<Dio>((ref) {
 
           if (genTime != null) {
             final ageMinutes = DateTime.now().difference(genTime).inMinutes;
-            if (ageMinutes >= 15 && ageMinutes <= 30) {
+            if (ageMinutes >= 15) {
               final username = authState.activeUser?.userName;
               final currentToken = authState.token;
 
