@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -40,13 +42,13 @@ class HomeScreen extends ConsumerWidget {
               );
             }
 
-            final plan = planData.currentPlans.first;
-            final isActive = plan.status.toLowerCase() == 'active';
+            final customerData = customerDetailAsync.asData?.value;
 
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                _buildPlanCard(context, plan, isActive, isDark),
+                if (customerData != null) _buildSmartBanner(context, customerData, isDark),
+                _buildPlanCard(context, planData, isDark),
                 const SizedBox(height: 16),
                 
                 // Data Usage & Expiry Section
@@ -94,10 +96,97 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlanCard(BuildContext context, CurrentPlan plan, bool isActive, bool isDark) {
+  Widget _buildSmartBanner(BuildContext context, CustomerDetail customer, bool isDark) {
+    final theme = Theme.of(context);
+    
+    final bool isLowData = customer.primaryAllocatedQuotaMB > 0 &&
+        (customer.primaryUsedQuotaMB / customer.primaryAllocatedQuotaMB) >= 0.9;
+    final bool isExpiringSoon = customer.planRemainingDays > 0 && customer.planRemainingDays <= 3;
+    final bool isExpired = customer.planRemainingDays <= 0;
+
+    if (!isLowData && !isExpiringSoon && !isExpired) {
+      return const SizedBox.shrink();
+    }
+
+    String message;
+    IconData icon;
+    Color bgColor;
+    Color fgColor;
+
+    if (isExpired) {
+      message = 'Your plan has expired. Please renew to continue services.';
+      icon = Icons.error_outline;
+      bgColor = Colors.red.withAlpha(isDark ? 50 : 30);
+      fgColor = Colors.red;
+    } else if (isExpiringSoon) {
+      message = 'Your plan expires in ${customer.planRemainingDays} days.';
+      icon = Icons.warning_amber_rounded;
+      bgColor = Colors.orange.withAlpha(isDark ? 50 : 30);
+      fgColor = Colors.orange.shade800;
+    } else {
+      message = 'You have used over 90% of your data quota.';
+      icon = Icons.data_usage;
+      bgColor = Colors.orange.withAlpha(isDark ? 50 : 30);
+      fgColor = Colors.orange.shade800;
+    }
+
+    if (isDark && fgColor == Colors.orange.shade800) {
+      fgColor = Colors.orange.shade400;
+    } else if (isDark && fgColor == Colors.red) {
+      fgColor = Colors.red.shade400;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: fgColor.withAlpha(50)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: fgColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: fgColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: fgColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              minimumSize: const Size(0, 32),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Payment gateway integration pending.')),
+              );
+            },
+            child: Text(isLowData && !isExpiringSoon && !isExpired ? 'Top Up' : 'Renew', style: const TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanCard(BuildContext context, SubscriberPlanResponse planData, bool isDark) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     
+    final plan = planData.currentPlans.first;
+    final isActive = plan.status.toLowerCase() == 'active';
+
     // Status colors
     final statusColor = isActive ? Colors.green : Colors.red;
     final statusIcon = isActive ? Icons.check : Icons.close;
@@ -111,111 +200,364 @@ class HomeScreen extends ConsumerWidget {
           color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Left Icon Indicator
-            SizedBox(
-              width: 56,
-              height: 56,
-              child: Stack(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDark 
-                          ? Colors.white.withAlpha(8) 
-                          : primaryColor.withAlpha(12),
-                      border: Border.all(
-                        color: isDark 
-                            ? Colors.white.withAlpha(12) 
-                            : primaryColor.withAlpha(25),
-                      ),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.wifi,
-                        color: primaryColor,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
+      child: InkWell(
+        onTap: () => _showPlanDetailsBottomSheet(context, planData, isDark),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Left Icon Indicator
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color: statusColor,
                         shape: BoxShape.circle,
+                        color: isDark 
+                            ? Colors.white.withAlpha(8) 
+                            : primaryColor.withAlpha(12),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
-                          width: 2,
+                          color: isDark 
+                              ? Colors.white.withAlpha(12) 
+                              : primaryColor.withAlpha(25),
                         ),
                       ),
-                      child: Icon(
-                        statusIcon,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            
-            // Plan Details Body
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Current Plan',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    plan.planName,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        '₹${plan.mrp} / month',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                      child: Center(
+                        child: Icon(
+                          Icons.wifi,
+                          color: primaryColor,
+                          size: 28,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '• ${plan.status}',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
                           color: statusColor,
-                          fontWeight: FontWeight.w500,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          statusIcon,
+                          size: 14,
+                          color: Colors.white,
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              
+              // Plan Details Body
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Current Plan',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      plan.planName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          '₹${plan.mrp} / month',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '• ${plan.status}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: isDark ? Colors.white54 : Colors.black54,
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showPlanDetailsBottomSheet(BuildContext context, SubscriberPlanResponse planData, bool isDark) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    final plan = planData.currentPlans.first;
+    final vasPlans = planData.currentVasPlans;
+
+    Widget buildDetailItem(String label, String value) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.textTheme.bodySmall?.color?.withAlpha(150),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF16161E) : Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).padding.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withAlpha(100),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, color: primaryColor, size: 28),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Plan Details',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Base Plan details
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(15),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Base Plan',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      plan.planName,
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        buildDetailItem('Price', '₹${plan.mrp}'),
+                        buildDetailItem('Speed', plan.primarySpeed.isNotEmpty ? plan.primarySpeed : 'N/A'),
+                        buildDetailItem('Validity', plan.validity.isNotEmpty ? plan.validity : 'N/A'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              if (vasPlans.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Icon(Icons.stars_rounded, color: Colors.amber.shade600, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Value Added Services',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: vasPlans.length,
+                    itemBuilder: (context, index) {
+                      final vas = vasPlans[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(15),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withAlpha(25),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.workspace_premium, color: Colors.amber, size: 28),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    vas.vasPlanName,
+                                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  if (vas.vasPlanRemark != null && vas.vasPlanRemark!.isNotEmpty) ...[
+                                    const SizedBox(height: 10),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 6,
+                                      children: vas.vasPlanRemark!.split(',').where((e) => e.trim().isNotEmpty).map((app) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(10),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: isDark ? Colors.white.withAlpha(30) : Colors.black.withAlpha(20),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            app.trim(),
+                                            style: theme.textTheme.labelSmall?.copyWith(
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ] else if (vas.chargeName != null && vas.chargeName!.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      vas.chargeName!,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (vas.noOfDaysRemaining > 0) ...[
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${vas.noOfDaysRemaining} Days',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Left',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -362,52 +704,56 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Bottom Cycle Container
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(8),
+            InkWell(
+              onTap: () => context.go('/usage'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withAlpha(25),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_outlined,
+                        color: primaryColor,
+                        size: 20,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.calendar_today_outlined,
-                      color: primaryColor,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Current cycle',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Current cycle',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          cycleRange,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                          const SizedBox(height: 2),
+                          Text(
+                            cycleRange,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: theme.iconTheme.color?.withAlpha(128),
-                  ),
-                ],
+                    Icon(
+                      Icons.chevron_right,
+                      color: theme.iconTheme.color?.withAlpha(128),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
