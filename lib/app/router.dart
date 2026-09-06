@@ -8,6 +8,7 @@ import 'package:kvman/features/auth/forgot_password_screen.dart';
 import 'package:kvman/features/home/home_screen.dart';
 import 'package:kvman/features/profile/profile_screen.dart';
 import 'package:kvman/features/usage/usage_screen.dart';
+import 'package:kvman/features/notifications/notifications_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -17,6 +18,7 @@ class AppRoutes {
   static const pinEntry = '/auth/pin';
   static const forgotPassword = '/auth/forgot-password';
   static const profile = '/profile';
+  static const notifications = '/notifications';
 }
 
 final titles = {0: 'KVMAN', 1: 'Usage', 2: 'Profile'};
@@ -57,9 +59,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Scaffold(
-          appBar: AppBar(title: Text(titles[navigationShell.currentIndex]!, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)),
+          appBar: AppBar(
+            title: Text(
+              titles[navigationShell.currentIndex]!, 
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                onPressed: () => context.push(AppRoutes.notifications),
+              ),
+            ],
+          ),
           body: navigationShell,
           bottomNavigationBar: NavigationBar(
             selectedIndex: navigationShell.currentIndex,

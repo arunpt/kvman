@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
@@ -236,8 +238,8 @@ class HomeScreen extends ConsumerWidget {
 
     String cycleRange = 'Current cycle';
     if (customer.planActivationDate != null && customer.planExpiryDate != null) {
-      final start = _formatDate(customer.planActivationDate!);
-      final end = _formatDate(customer.planExpiryDate!);
+      final start = DateFormat("d MMM yyyy").format(customer.planActivationDate!);
+      final end = DateFormat("d MMM yyyy").format(customer.planExpiryDate!);
       cycleRange = '$start – $end';
     }
 
@@ -423,8 +425,8 @@ class HomeScreen extends ConsumerWidget {
     final progressDays = customer.planUsedDays;
     final remainingDays = customer.planRemainingDays;
     
-    String startText = customer.planActivationDate != null ? _formatDate(customer.planActivationDate!) : '';
-    String endText = customer.planExpiryDate != null ? _formatDate(customer.planExpiryDate!) : '';
+    String startText = customer.planActivationDate != null ? DateFormat("d MMM yyyy").format(customer.planActivationDate!) : '';
+    String endText = customer.planExpiryDate != null ? DateFormat("d MMM yyyy").format(customer.planExpiryDate!) : '';
     
     final progress = (progressDays / totalDays).clamp(0.0, 1.0);
     final remainingStr = remainingDays < 0 ? 'Expired' : '$remainingDays days left';
@@ -811,10 +813,5 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }
