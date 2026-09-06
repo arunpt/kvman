@@ -17,6 +17,9 @@ class CustomerDetail {
   final DateTime? customerActivationDate;
   final DateTime? planActivationDate;
   final DateTime? planExpiryDate;
+  final int planRemainingDays;
+  final int planActiveDays;
+  final int planUsedDays;
 
   const CustomerDetail({
     required this.userId,
@@ -37,6 +40,10 @@ class CustomerDetail {
     this.customerActivationDate,
     this.planActivationDate,
     this.planExpiryDate,
+    required this.planRemainingDays,
+    required this.planActiveDays,
+    required this.planUsedDays,
+
   });
 
   factory CustomerDetail.fromJson(Map<String, dynamic> json) {
@@ -65,6 +72,10 @@ class CustomerDetail {
           _parseDotNetDate(json['ActivationDate']?.toString() ?? ''),
       planExpiryDate:
           _parseDotNetDate(json['ExpiryDate']?.toString() ?? ''),
+      planRemainingDays:
+          int.tryParse(json['remainingDay']?.toString() ?? '') ?? 0,
+      planActiveDays: int.tryParse(json['activeDay']?.toString() ?? '') ?? 0,
+      planUsedDays: int.tryParse(json['UsedDays']?.toString() ?? '') ?? 0,
 
     );
   }

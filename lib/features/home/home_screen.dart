@@ -418,28 +418,15 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
-    int totalDays = 1;
-    int elapsedDays = 0;
-    int remainingDays = 0;
-    String startText = '';
-    String endText = '';
+    final calculatedTotal = customer.planRemainingDays + customer.planActiveDays;
+    final totalDays = calculatedTotal > 0 ? calculatedTotal : 1;
+    final progressDays = customer.planUsedDays;
+    final remainingDays = customer.planRemainingDays;
     
-    if (customer.planActivationDate != null && customer.planExpiryDate != null) {
-      final startDate = customer.planActivationDate!;
-      final endDate = customer.planExpiryDate!;
-      
-      startText = _formatDate(startDate);
-      endText = _formatDate(endDate);
-      
-      totalDays = endDate.difference(startDate).inDays;
-      if (totalDays <= 0) totalDays = 1;
-      
-      final now = DateTime.now();
-      elapsedDays = now.difference(startDate).inDays;
-      remainingDays = endDate.difference(now).inDays;
-    }
+    String startText = customer.planActivationDate != null ? _formatDate(customer.planActivationDate!) : '';
+    String endText = customer.planExpiryDate != null ? _formatDate(customer.planExpiryDate!) : '';
     
-    final progress = (elapsedDays / totalDays).clamp(0.0, 1.0);
+    final progress = (progressDays / totalDays).clamp(0.0, 1.0);
     final remainingStr = remainingDays < 0 ? 'Expired' : '$remainingDays days left';
 
     return Card(
