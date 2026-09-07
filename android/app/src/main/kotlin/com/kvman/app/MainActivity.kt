@@ -1,4 +1,4 @@
-package com.example.kvman
+package com.kvman.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
