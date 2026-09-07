@@ -8,8 +8,12 @@ import 'package:kvman/core/utils/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final dioProvider = Provider<Dio>((ref) {
+  final baseUri = dotenv.get('KV_BASE_URI');
+  final portalPath = dotenv.get('KV_PORTAL_API_PATH');
+  final subscriberPath = dotenv.get('KV_SUBSCIBER_API_PATH');
+
   final options = BaseOptions(
-    baseUrl: dotenv.get('KV_PORTAL_API_BASE_URI'),
+    baseUrl: '$baseUri/$portalPath',
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
   );
@@ -128,6 +132,11 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
+        // Dynamic BaseURL routing
+        if (options.extra['useSubscriberApi'] == true) {
+          options.baseUrl = '$baseUri/$subscriberPath';
+        }
+
         // Pre-emptive explicit refresh if token is older than 15 minutes
         if (!options.path.contains('/ReGenarateToken')) {
           final authState = ref.read(authNotifierProvider);
