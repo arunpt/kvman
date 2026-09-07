@@ -76,69 +76,61 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   Card(
-                     elevation: 0,
-      color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isDark
-              ? Colors.white.withAlpha(12)
-              : Colors.black.withAlpha(12),
-        ),
-      ),
+                    elevation: 0,
+                    color: isDark
+                        ? const Color(0xFF16161E)
+                        : theme.colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: isDark
+                            ? Colors.white.withAlpha(12)
+                            : Colors.black.withAlpha(12),
+                      ),
+                    ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
-                      children: users.map((u) {
-                        final isActive = u.id == activeUser.id;
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: isActive
-                                ? Theme.of(context).colorScheme.primaryContainer
-                                : Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest,
-                            child: Text(
-                              u.userName.substring(0, 1).toUpperCase(),
+                      children: [
+                        ...users.map((u) {
+                          final isActive = u.id == activeUser.id;
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: isActive
+                                  ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                  : Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                              child: Text(
+                                u.userName.substring(0, 1).toUpperCase(),
+                              ),
                             ),
-                          ),
-                          title: Text(u.userName),
-                          subtitle: Text(u.customerId),
-                          trailing: isActive
-                              ? Icon(
-                                  Icons.check_circle,
-                                  color: Theme.of(context).colorScheme.primary,
-                                )
-                              : null,
-                          onTap: isActive
-                              ? null
-                              : () {
-                                  ref
-                                      .read(authNotifierProvider.notifier)
-                                      .switchUser(u.id);
-                                },
-                        );
-                      }).toList(),
+                            title: Text(u.userName),
+                            subtitle: Text(u.customerId),
+                            trailing: isActive
+                                ? Icon(
+                                    Icons.check_circle,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  )
+                                : null,
+                            onTap: isActive
+                                ? null
+                                : () {
+                                    ref
+                                        .read(authNotifierProvider.notifier)
+                                        .switchUser(u.id);
+                                  },
+                          );
+                        }),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 32),
                 ],
               ],
-            ),
-          ),
-        ),
-
-        // Pinned Logout Button
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: FilledButton.tonalIcon(
-              onPressed: () => ref.read(authNotifierProvider.notifier).logout(),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
             ),
           ),
         ),

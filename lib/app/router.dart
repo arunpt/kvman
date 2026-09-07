@@ -86,6 +86,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               actions: [
+                if (navigationShell.currentIndex == 2)
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    onPressed: () async {
+                      final shouldLogout = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Log Out?'),
+                          content: const Text(
+                            'Are you sure you want to log out of KvMan?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton.tonal(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: FilledButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: const Text('Log Out'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (shouldLogout == true) {
+                        ref.read(authNotifierProvider.notifier).logout();
+                      }
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined),
                   onPressed: () => context.push(AppRoutes.notifications),
