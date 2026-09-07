@@ -191,7 +191,6 @@ class ActiveSessionsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
-    // Determine icon based on platform
     IconData deviceIcon = Icons.device_unknown;
     if (session.platformOs.toLowerCase().contains('android')) {
       deviceIcon = Icons.phone_android;
@@ -210,7 +209,6 @@ class ActiveSessionsScreen extends ConsumerWidget {
           .format(session.loginTime!);
     }
 
-    // Determine display name
     String displayName = session.platformBrand.isNotEmpty
         ? session.platformBrand
         : session.deviceName;
@@ -271,6 +269,89 @@ class ActiveSessionsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                if (isTerminating)
+                  const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.power_settings_new, size: 22),
+                    color: Colors.red.withAlpha(200),
+                    onPressed: isAnyTerminating
+                        ? null
+                        : () async {
+                            final shouldTerminate = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Terminate Session?'),
+                                content: Text(
+                                  'Are you sure you want to sign out from \'$displayName\'?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  FilledButton.tonal(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    style: FilledButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                      backgroundColor: Colors.red.withAlpha(
+                                        isDark ? 20 : 30,
+                                      ),
+                                    ),
+                                    child: const Text('Terminate'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (shouldTerminate != true) return;
+
+                            ref
+                                .read(terminatingSessionIdProvider.notifier)
+                                .setTerminatingId(session.sessionId);
+                            try {
+                              await ref
+                                  .read(activeSessionsRepositoryProvider)
+                                  .logoutSession(session.sessionId);
+                              ref.invalidate(activeSessionsProvider);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Session successfully terminated.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      e.toString().replaceAll(
+                                        'Exception: ',
+                                        '',
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            } finally {
+                              ref
+                                  .read(terminatingSessionIdProvider.notifier)
+                                  .setTerminatingId(null);
+                            }
+                          },
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -279,57 +360,6 @@ class ActiveSessionsScreen extends ConsumerWidget {
             _buildDetailRow(context, 'App Version', session.appVersion),
             _buildDetailRow(context, 'Device', session.deviceName),
             _buildDetailRow(context, 'Login Time', formattedDate),
-            const SizedBox(height: 12),
-            FilledButton.tonalIcon(
-              onPressed: isAnyTerminating
-                  ? null
-                  : () async {
-                      ref
-                          .read(terminatingSessionIdProvider.notifier)
-                          .setTerminatingId(session.sessionId);
-                      try {
-                        await ref
-                            .read(activeSessionsRepositoryProvider)
-                            .logoutSession(session.sessionId);
-                        ref.invalidate(activeSessionsProvider);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Session successfully terminated.'),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                e.toString().replaceAll('Exception: ', ''),
-                              ),
-                            ),
-                          );
-                        }
-                      } finally {
-                        ref
-                            .read(terminatingSessionIdProvider.notifier)
-                            .setTerminatingId(null);
-                      }
-                    },
-              icon: isTerminating
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.logout, size: 18),
-              label: Text(
-                isTerminating ? 'Terminating...' : 'Terminate Session',
-              ),
-              style: FilledButton.styleFrom(
-                foregroundColor: Colors.red,
-                backgroundColor: Colors.red.withAlpha(isDark ? 20 : 30),
-              ),
-            ),
           ],
         ),
       ),
