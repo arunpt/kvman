@@ -41,12 +41,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.isAuthenticated;
       final goingToAuth = state.matchedLocation.startsWith('/auth');
 
-      if (!isAuthenticated && !goingToAuth) {
-        return AppRoutes.phoneEntry;
+      if (!isAuthenticated) {
+        if (!goingToAuth) return AppRoutes.phoneEntry;
+        return null;
       }
+
       if (isAuthenticated && goingToAuth) {
         return AppRoutes.home;
       }
+
       return null;
     },
     routes: [

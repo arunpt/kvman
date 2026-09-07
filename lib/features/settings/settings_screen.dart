@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kvman/app/theme_provider.dart';
+import 'package:kvman/app/biometric_settings_provider.dart';
 import 'package:kvman/app/router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -10,17 +12,27 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final isBiometricEnabled = ref.watch(biometricSettingsProvider);
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Text(
-            'Appearance',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    Widget buildSectionHeader(String title) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: primaryColor,
           ),
         ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
+      children: [
+        buildSectionHeader('Appearance'),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: SizedBox(
@@ -52,13 +64,41 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+
+        buildSectionHeader('Security'),
+        SwitchListTile(
+          secondary: const Icon(Icons.fingerprint),
+          title: const Text('Biometric Lock'),
+          subtitle: const Text('Require fingerprint when opening app'),
+          value: isBiometricEnabled,
+          onChanged: (val) {
+            ref.read(biometricSettingsProvider.notifier).setEnabled(val);
+          },
+        ),
         ListTile(
           leading: const Icon(Icons.devices_outlined),
           title: const Text('Active Sessions'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             context.push(AppRoutes.activeSessions);
+          },
+        ),
+
+        buildSectionHeader('About'),
+        ListTile(
+          leading: const Icon(Icons.code),
+          title: const Text('Source Code'),
+          subtitle: const Text('View on GitHub'),
+          trailing: const Icon(Icons.open_in_new, size: 20),
+          onTap: () async {
+            final Uri url = Uri.parse('https://github.com/your-username/kvman');
+            if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open the link.')),
+                );
+              }
+            }
           },
         ),
         const ListTile(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kvman/features/auth/kv_user.dart';
+import 'package:local_auth/local_auth.dart';
 
 const _tokenKey = 'auth_token';
 const _phoneKey = 'auth_phone';
@@ -17,6 +18,7 @@ final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
 
 class AuthState {
   final bool isAuthenticated;
+  final bool isBiometricVerified;
   final bool isLoading;
   final String? token;
   final String? phoneNumber;
@@ -27,6 +29,7 @@ class AuthState {
 
   const AuthState({
     this.isAuthenticated = false,
+    this.isBiometricVerified = true,
     this.isLoading = true,
     this.token,
     this.phoneNumber,
@@ -75,8 +78,32 @@ class AuthNotifier extends Notifier<AuthState> {
       );
     }
 
+    final isAuthenticated = token != null && users.isNotEmpty;
+    final isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+    bool isBiometricVerified = true;
+
+    if (isAuthenticated && isBiometricEnabled) {
+      try {
+        final localAuth = LocalAuthentication();
+        final canCheckBiometrics = await localAuth.canCheckBiometrics;
+        final isDeviceSupported = await localAuth.isDeviceSupported();
+
+        if (canCheckBiometrics || isDeviceSupported) {
+          final availableBiometrics = await localAuth.getAvailableBiometrics();
+          // We only require biometric verification if there is actually a biometric method enrolled
+          if (availableBiometrics.isNotEmpty) {
+            isBiometricVerified = false;
+          }
+        }
+      } catch (e) {
+        // If biometrics fail to check, default to true so we don't lock out the user
+        isBiometricVerified = true;
+      }
+    }
+
     state = AuthState(
-      isAuthenticated: token != null && users.isNotEmpty,
+      isAuthenticated: isAuthenticated,
+      isBiometricVerified: isBiometricVerified,
       isLoading: false,
       token: token,
       phoneNumber: phone,
@@ -85,6 +112,32 @@ class AuthNotifier extends Notifier<AuthState> {
       tokenGeneratedTime: genTime,
       prevToken: prevToken,
     );
+  }
+
+  Future<void> verifyBiometric() async {
+    try {
+      final localAuth = LocalAuthentication();
+      final didAuthenticate = await localAuth.authenticate(
+        localizedReason: 'Please authenticate to access KvMan',
+        biometricOnly: false,
+        persistAcrossBackgrounding: true,
+      );
+      if (didAuthenticate) {
+        state = AuthState(
+          isAuthenticated: state.isAuthenticated,
+          isBiometricVerified: true,
+          isLoading: state.isLoading,
+          token: state.token,
+          phoneNumber: state.phoneNumber,
+          users: state.users,
+          activeUser: state.activeUser,
+          tokenGeneratedTime: state.tokenGeneratedTime,
+          prevToken: state.prevToken,
+        );
+      }
+    } catch (e) {
+      // Handle error
+    }
   }
 
   Future<void> login({
@@ -115,6 +168,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     state = AuthState(
       isAuthenticated: true,
+      isBiometricVerified: true,
       isLoading: false,
       token: token,
       phoneNumber: phoneNumber,
@@ -138,6 +192,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     state = AuthState(
       isAuthenticated: state.isAuthenticated,
+      isBiometricVerified: state.isBiometricVerified,
       isLoading: state.isLoading,
       token: newToken,
       phoneNumber: state.phoneNumber,
@@ -157,6 +212,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       state = AuthState(
         isAuthenticated: state.isAuthenticated,
+        isBiometricVerified: state.isBiometricVerified,
         isLoading: state.isLoading,
         token: prev,
         phoneNumber: state.phoneNumber,
@@ -174,6 +230,7 @@ class AuthNotifier extends Notifier<AuthState> {
     await prefs.setString(_activeUserIdKey, userId);
     state = AuthState(
       isAuthenticated: state.isAuthenticated,
+      isBiometricVerified: state.isBiometricVerified,
       isLoading: state.isLoading,
       token: state.token,
       phoneNumber: state.phoneNumber,

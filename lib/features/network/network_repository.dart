@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/core/api/api_client.dart';
 import 'package:kvman/features/auth/auth_notifier.dart';
-import 'package:kvman/features/profile/network_model.dart';
+import 'package:kvman/features/network/network_model.dart';
 
 final networkRepositoryProvider = Provider<NetworkRepository>((ref) {
   return NetworkRepository(ref.watch(dioProvider), ref);
