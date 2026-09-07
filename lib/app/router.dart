@@ -12,6 +12,7 @@ import 'package:kvman/features/notifications/notifications_screen.dart';
 import 'package:kvman/features/settings/settings_screen.dart';
 import 'package:kvman/features/network/network_screen.dart';
 import 'package:kvman/features/settings/active_sessions_screen.dart';
+import 'package:kvman/core/widgets/double_tap_to_exit.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -77,50 +78,52 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ActiveSessionsScreen(),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => Scaffold(
-          appBar: AppBar(
-            title: Text(
-              titles[navigationShell.currentIndex]!,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+        builder: (context, state, navigationShell) => DoubleTapToExit(
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(
+                titles[navigationShell.currentIndex]!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  onPressed: () => context.push(AppRoutes.notifications),
+                ),
+              ],
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () => context.push(AppRoutes.notifications),
-              ),
-            ],
-          ),
-          body: navigationShell,
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: (index) {
-              navigationShell.goBranch(
-                index,
-                initialLocation: index == navigationShell.currentIndex,
-              );
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.bar_chart_outlined),
-                selectedIcon: Icon(Icons.bar_chart),
-                label: 'Usage',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Settings',
-              ),
-            ],
+            body: navigationShell,
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: (index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart),
+                  label: 'Usage',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
+            ),
           ),
         ),
         branches: [

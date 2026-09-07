@@ -42,9 +42,7 @@ final dioProvider = Provider<Dio>((ref) {
         final resData = refreshRes.data;
         if (resData is Map<String, dynamic> && resData.containsKey('Token')) {
           String newToken = resData['Token'] as String;
-          if (newToken.endsWith('~0')) {
-            newToken = newToken.substring(0, newToken.length - 2);
-          }
+          newToken = newToken.substring(0, newToken.length - 2);
           if (newToken.isNotEmpty && !newToken.contains('Invalid')) {
             await ref.read(authNotifierProvider.notifier).updateToken(newToken);
             return newToken;
@@ -70,10 +68,12 @@ final dioProvider = Provider<Dio>((ref) {
         const SnackBar(content: Text('Session expired. Please login again.')),
       );
       ref.read(authNotifierProvider.notifier).logout();
-      if (errorHandler != null)
+      if (errorHandler != null) {
         errorHandler.next(originalErrorOrResponse as DioException);
-      if (responseHandler != null)
+      }
+      if (responseHandler != null) {
         responseHandler.next(originalErrorOrResponse as Response);
+      }
       return;
     }
 
@@ -116,10 +116,12 @@ final dioProvider = Provider<Dio>((ref) {
         const SnackBar(content: Text('Session expired. Please login again.')),
       );
       ref.read(authNotifierProvider.notifier).logout();
-      if (errorHandler != null)
+      if (errorHandler != null) {
         errorHandler.next(originalErrorOrResponse as DioException);
-      if (responseHandler != null)
+      }
+      if (responseHandler != null) {
         responseHandler.next(originalErrorOrResponse as Response);
+      }
     }
   }
 

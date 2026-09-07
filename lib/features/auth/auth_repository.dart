@@ -42,9 +42,7 @@ class AuthRepository {
     }
 
     String token = data['Token'] as String;
-    if (token.endsWith('~0')) {
-      token = token.substring(0, token.length - 2);
-    }
+    token = token.substring(0, token.length - 2);
     return token;
   }
 
