@@ -17,12 +17,17 @@ class NotificationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Notifications',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(notificationsProvider);
-          await ref.read(notificationsProvider.future).catchError((_) => <AppNotification>[]);
+          await ref
+              .read(notificationsProvider.future)
+              .catchError((_) => <AppNotification>[]);
         },
         child: notificationsAsync.when(
           skipLoadingOnRefresh: false,
@@ -35,7 +40,11 @@ class NotificationsScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: theme.colorScheme.error,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load notifications',
@@ -72,7 +81,11 @@ class NotificationsScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_off_outlined, size: 64, color: Colors.grey),
+                          Icon(
+                            Icons.notifications_off_outlined,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
                           SizedBox(height: 16),
                           Text(
                             'No new notifications',
@@ -105,7 +118,11 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotificationCard(BuildContext context, AppNotification notification, bool isDark) {
+  Widget _buildNotificationCard(
+    BuildContext context,
+    AppNotification notification,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final isPayment = notification.module.toLowerCase().contains('payment');
     final iconColor = isPayment ? Colors.green : theme.colorScheme.primary;
@@ -117,7 +134,9 @@ class NotificationsScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -131,11 +150,7 @@ class NotificationsScreen extends ConsumerWidget {
                 color: iconColor.withAlpha(25),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                iconData,
-                color: iconColor,
-                size: 24,
-              ),
+              child: Icon(iconData, color: iconColor, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -147,7 +162,9 @@ class NotificationsScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          notification.module.isNotEmpty ? notification.module : 'Notification',
+                          notification.module.isNotEmpty
+                              ? notification.module
+                              : 'Notification',
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -157,7 +174,8 @@ class NotificationsScreen extends ConsumerWidget {
                       ),
                       if (notification.date != null)
                         Text(
-                          DateFormat("d MMM, h:mm a").format(notification.date!),
+                          DateFormat("d MMM, h:mm a")
+                              .format(notification.date!),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.grey,
                             fontSize: 11,
@@ -194,7 +212,9 @@ class NotificationsScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+              color: isDark
+                  ? Colors.white.withAlpha(12)
+                  : Colors.black.withAlpha(12),
             ),
           ),
           child: Padding(
@@ -230,10 +250,19 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _shimmerBox(double width, double height, bool isDark, {BoxShape shape = BoxShape.rectangle}) {
-    final baseColor = isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(20);
-    final highlightColor = isDark ? Colors.white.withAlpha(40) : Colors.black.withAlpha(40);
-    
+  Widget _shimmerBox(
+    double width,
+    double height,
+    bool isDark, {
+    BoxShape shape = BoxShape.rectangle,
+  }) {
+    final baseColor = isDark
+        ? Colors.white.withAlpha(20)
+        : Colors.black.withAlpha(20);
+    final highlightColor = isDark
+        ? Colors.white.withAlpha(40)
+        : Colors.black.withAlpha(40);
+
     return Shimmer.fromColors(
       baseColor: baseColor,
       highlightColor: highlightColor,
@@ -243,10 +272,11 @@ class NotificationsScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           shape: shape,
-          borderRadius: shape == BoxShape.rectangle ? BorderRadius.circular(4) : null,
+          borderRadius: shape == BoxShape.rectangle
+              ? BorderRadius.circular(4)
+              : null,
         ),
       ),
     );
   }
-
 }

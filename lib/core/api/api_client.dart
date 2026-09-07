@@ -20,9 +20,9 @@ final dioProvider = Provider<Dio>((ref) {
     final authState = ref.read(authNotifierProvider);
     final username = authState.activeUser?.userName;
     final currentToken = authState.token;
-    
+
     if (username == null || currentToken == null) return null;
-    
+
     try {
       final refreshDio = Dio(
         BaseOptions(
@@ -64,13 +64,16 @@ final dioProvider = Provider<Dio>((ref) {
     ResponseInterceptorHandler? responseHandler,
   ) async {
     // 1. Prevent infinite refresh loop on the regenerate endpoint itself
-    if (requestOptions.path.contains('/ReGenarateToken') || requestOptions.extra['isRetry'] == true) {
+    if (requestOptions.path.contains('/ReGenarateToken') ||
+        requestOptions.extra['isRetry'] == true) {
       rootScaffoldMessengerKey.currentState?.showSnackBar(
         const SnackBar(content: Text('Session expired. Please login again.')),
       );
       ref.read(authNotifierProvider.notifier).logout();
-      if (errorHandler != null) errorHandler.next(originalErrorOrResponse as DioException);
-      if (responseHandler != null) responseHandler.next(originalErrorOrResponse as Response);
+      if (errorHandler != null)
+        errorHandler.next(originalErrorOrResponse as DioException);
+      if (responseHandler != null)
+        responseHandler.next(originalErrorOrResponse as Response);
       return;
     }
 
@@ -82,19 +85,19 @@ final dioProvider = Provider<Dio>((ref) {
       // 3. Retry original request with new token
       final newHeaders = Map<String, dynamic>.from(requestOptions.headers);
       newHeaders['Authorization'] = 'Bearer $newToken';
-      
+
       final newExtra = Map<String, dynamic>.from(requestOptions.extra);
       newExtra['isRetry'] = true;
-      
+
       final cloneReq = requestOptions.copyWith(
         headers: newHeaders,
         extra: newExtra,
       );
-      
+
       final retryDio = Dio(BaseOptions(baseUrl: requestOptions.baseUrl));
       try {
         final retryRes = await retryDio.fetch(cloneReq);
-        
+
         // If the retry STILL returns Invalid token, it's a hard failure
         final retryDataStr = retryRes.data?.toString() ?? '';
         if (!retryDataStr.contains('Invalid token')) {
@@ -103,7 +106,7 @@ final dioProvider = Provider<Dio>((ref) {
           if (errorHandler != null) return errorHandler.resolve(retryRes);
         }
       } catch (retryErr) {
-         logger.e('Retry request failed: $retryErr');
+        logger.e('Retry request failed: $retryErr');
       }
     }
 
@@ -113,8 +116,10 @@ final dioProvider = Provider<Dio>((ref) {
         const SnackBar(content: Text('Session expired. Please login again.')),
       );
       ref.read(authNotifierProvider.notifier).logout();
-      if (errorHandler != null) errorHandler.next(originalErrorOrResponse as DioException);
-      if (responseHandler != null) responseHandler.next(originalErrorOrResponse as Response);
+      if (errorHandler != null)
+        errorHandler.next(originalErrorOrResponse as DioException);
+      if (responseHandler != null)
+        responseHandler.next(originalErrorOrResponse as Response);
     }
   }
 
@@ -125,13 +130,14 @@ final dioProvider = Provider<Dio>((ref) {
         if (!options.path.contains('/ReGenarateToken')) {
           final authState = ref.read(authNotifierProvider);
           final genTime = authState.tokenGeneratedTime;
-          if (genTime != null && DateTime.now().difference(genTime).inMinutes >= 15) {
-             final newToken = await regenerateToken(options.baseUrl);
-             if (newToken != null) {
-               // Update headers to use the freshly generated token
-               options.headers['Authorization'] = 'Bearer $newToken';
-               return handler.next(options);
-             }
+          if (genTime != null &&
+              DateTime.now().difference(genTime).inMinutes >= 15) {
+            final newToken = await regenerateToken(options.baseUrl);
+            if (newToken != null) {
+              // Update headers to use the freshly generated token
+              options.headers['Authorization'] = 'Bearer $newToken';
+              return handler.next(options);
+            }
           }
         }
 
@@ -159,7 +165,12 @@ final dioProvider = Provider<Dio>((ref) {
         final dataStr = response.data?.toString() ?? '';
 
         if (dataStr.contains('Invalid token')) {
-          await handleInvalidToken(response.requestOptions, response, null, handler);
+          await handleInvalidToken(
+            response.requestOptions,
+            response,
+            null,
+            handler,
+          );
           return;
         }
 

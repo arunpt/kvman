@@ -63,9 +63,5 @@ class UsageData {
   final UsageSummary summary;
   final List<SessionItem> sessions;
 
-  const UsageData({
-    required this.summary,
-    required this.sessions,
-  });
+  const UsageData({required this.summary, required this.sessions});
 }
-

@@ -18,8 +18,10 @@ class OpticalParameter {
   factory OpticalParameter.fromJson(Map<String, dynamic> json) {
     return OpticalParameter(
       deviceId: json['device_id']?.toString() ?? 'Unknown',
-      connectionStatusIpv4: json['connection_status_ipv4']?.toString() ?? 'Unknown',
-      connectionStatusIpv6: json['connection_status_ipv6']?.toString() ?? 'Unknown',
+      connectionStatusIpv4:
+          json['connection_status_ipv4']?.toString() ?? 'Unknown',
+      connectionStatusIpv6:
+          json['connection_status_ipv6']?.toString() ?? 'Unknown',
       connectionType: json['connection_type']?.toString() ?? 'Unknown',
       opticalParamRece: json['optical_param_rece'] as num? ?? 0,
       opticalParamTrans: json['optical_param_trans'] as num? ?? 0,
@@ -48,7 +50,10 @@ class WanInterface {
     required this.landBinding,
   });
 
-  factory WanInterface.fromJson(Map<String, dynamic> json, {String group = ''}) {
+  factory WanInterface.fromJson(
+    Map<String, dynamic> json, {
+    String group = '',
+  }) {
     return WanInterface(
       protocolGroup: group.toUpperCase(),
       name: json['name']?.toString() ?? '',
@@ -69,9 +74,9 @@ class WanDetails {
 
   factory WanDetails.fromJson(Map<String, dynamic> json) {
     List<WanInterface> extracted = [];
-    
+
     final groups = ['wanif4', 'wanif6'];
-    
+
     for (var group in groups) {
       if (json[group] is Map<String, dynamic>) {
         final groupMap = json[group] as Map<String, dynamic>;
@@ -83,7 +88,7 @@ class WanDetails {
         }
       }
     }
-    
+
     return WanDetails(interfaces: extracted);
   }
 }

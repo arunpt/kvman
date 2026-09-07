@@ -33,4 +33,3 @@ class AppNotification {
     ).toLocal(); // Converting to local time for display
   }
 }
-

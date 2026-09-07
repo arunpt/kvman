@@ -43,7 +43,6 @@ class CustomerDetail {
     required this.planRemainingDays,
     required this.planActiveDays,
     required this.planUsedDays,
-
   });
 
   factory CustomerDetail.fromJson(Map<String, dynamic> json) {
@@ -66,17 +65,17 @@ class CustomerDetail {
           int.tryParse(json['PrimaryUnusedQuotaMB']?.toString() ?? '') ?? 0,
       primaryUsedQuotaMB:
           int.tryParse(json['PrimaryUsedQuotaMB']?.toString() ?? '') ?? 0,
-      customerActivationDate:
-          _parseDotNetDate(json['CustomerActivationDate']?.toString() ?? ''),
-      planActivationDate:
-          _parseDotNetDate(json['ActivationDate']?.toString() ?? ''),
-      planExpiryDate:
-          _parseDotNetDate(json['ExpiryDate']?.toString() ?? ''),
+      customerActivationDate: _parseDotNetDate(
+        json['CustomerActivationDate']?.toString() ?? '',
+      ),
+      planActivationDate: _parseDotNetDate(
+        json['ActivationDate']?.toString() ?? '',
+      ),
+      planExpiryDate: _parseDotNetDate(json['ExpiryDate']?.toString() ?? ''),
       planRemainingDays:
           int.tryParse(json['remainingDay']?.toString() ?? '') ?? 0,
       planActiveDays: int.tryParse(json['activeDay']?.toString() ?? '') ?? 0,
       planUsedDays: int.tryParse(json['UsedDays']?.toString() ?? '') ?? 0,
-
     );
   }
 

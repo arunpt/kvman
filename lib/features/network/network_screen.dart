@@ -50,7 +50,18 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
               ),
             ),
             Card(
-              margin: EdgeInsets.zero,
+              elevation: 0,
+              color: isDark
+                  ? const Color(0xFF16161E)
+                  : theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDark
+                      ? Colors.white.withAlpha(12)
+                      : Colors.black.withAlpha(12),
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: opticalAsync.when(
@@ -123,7 +134,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: rxColor,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -177,7 +188,18 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
               ),
             ),
             Card(
-              margin: EdgeInsets.zero,
+              elevation: 0,
+              color: isDark
+                  ? const Color(0xFF16161E)
+                  : theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDark
+                      ? Colors.white.withAlpha(12)
+                      : Colors.black.withAlpha(12),
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: wanAsync.when(

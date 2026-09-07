@@ -1,9 +1,7 @@
 class SessionListResponse {
   final String totalUsageVolume;
 
-  SessionListResponse({
-    required this.totalUsageVolume,
-  });
+  SessionListResponse({required this.totalUsageVolume});
 
   factory SessionListResponse.fromJson(Map<String, dynamic> json) {
     return SessionListResponse(
@@ -11,4 +9,3 @@ class SessionListResponse {
     );
   }
 }
-

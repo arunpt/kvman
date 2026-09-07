@@ -9,7 +9,9 @@ import 'package:kvman/features/home/home_screen.dart';
 import 'package:kvman/features/profile/profile_screen.dart';
 import 'package:kvman/features/usage/usage_screen.dart';
 import 'package:kvman/features/notifications/notifications_screen.dart';
+import 'package:kvman/features/settings/settings_screen.dart';
 import 'package:kvman/features/network/network_screen.dart';
+import 'package:kvman/features/settings/active_sessions_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -20,10 +22,12 @@ class AppRoutes {
   static const forgotPassword = '/auth/forgot-password';
   static const profile = '/profile';
   static const notifications = '/notifications';
+  static const settings = '/settings';
   static const diagnostics = '/diagnostics';
+  static const activeSessions = '/active-sessions';
 }
 
-final titles = {0: 'KVMAN', 1: 'Usage', 2: 'Profile'};
+final titles = {0: 'KVMAN', 1: 'Usage', 2: 'Profile', 3: 'Settings'};
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -68,16 +72,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.diagnostics,
         builder: (context, state) => const NetworkScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.activeSessions,
+        builder: (context, state) => const ActiveSessionsScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Scaffold(
           appBar: AppBar(
             title: Text(
-              titles[navigationShell.currentIndex]!, 
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              titles[navigationShell.currentIndex]!,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined),
                 onPressed: () => context.push(AppRoutes.notifications),
               ),
             ],
@@ -107,6 +115,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 selectedIcon: Icon(Icons.person),
                 label: 'Profile',
               ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
             ],
           ),
         ),
@@ -132,6 +145,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.profile,
                 builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.settings,
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

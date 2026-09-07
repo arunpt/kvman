@@ -8,7 +8,9 @@ final networkRepositoryProvider = Provider<NetworkRepository>((ref) {
   return NetworkRepository(ref.watch(dioProvider), ref);
 });
 
-final opticalParameterProvider = FutureProvider.autoDispose<OpticalParameter?>((ref) async {
+final opticalParameterProvider = FutureProvider.autoDispose<OpticalParameter?>((
+  ref,
+) async {
   return ref.watch(networkRepositoryProvider).fetchOpticalParameters();
 });
 

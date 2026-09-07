@@ -7,10 +7,12 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository(ref.watch(dioProvider));
 });
 
-final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>((ref) async {
-  final repository = ref.watch(notificationRepositoryProvider);
-  return repository.fetchNotifications();
-});
+final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>(
+  (ref) async {
+    final repository = ref.watch(notificationRepositoryProvider);
+    return repository.fetchNotifications();
+  },
+);
 
 class NotificationRepository {
   final Dio _dio;
@@ -19,7 +21,7 @@ class NotificationRepository {
 
   Future<List<AppNotification>> fetchNotifications() async {
     final response = await _dio.post('/CustomerNotification');
-    
+
     final data = response.data;
     if (data is! Map<String, dynamic>) {
       throw Exception('Invalid response format');
@@ -27,7 +29,9 @@ class NotificationRepository {
 
     final returnCode = data['returnCode'];
     if (returnCode != null && returnCode != 0) {
-      throw Exception(data['returnMessage']?.toString() ?? 'Failed to load notifications');
+      throw Exception(
+        data['returnMessage']?.toString() ?? 'Failed to load notifications',
+      );
     }
 
     final list = data['CustomerGetNotification'] as List<dynamic>?;
@@ -38,4 +42,3 @@ class NotificationRepository {
         .toList();
   }
 }
-

@@ -47,7 +47,10 @@ class CurrentVasPlan {
     this.chargeName,
   });
 
-  factory CurrentVasPlan.fromJson(Map<String, dynamic> json, {Map<String, String>? remarksMap}) {
+  factory CurrentVasPlan.fromJson(
+    Map<String, dynamic> json, {
+    Map<String, String>? remarksMap,
+  }) {
     DateTime? parsedExpiry;
     final dateStr = json['ExpiryDate']?.toString();
     if (dateStr != null) {
@@ -62,7 +65,9 @@ class CurrentVasPlan {
 
     final vasName = json['VasPlanName']?.toString() ?? '';
     String? remark = json['VASPlanRemark']?.toString();
-    if (remark == null && remarksMap != null && remarksMap.containsKey(vasName)) {
+    if (remark == null &&
+        remarksMap != null &&
+        remarksMap.containsKey(vasName)) {
       remark = remarksMap[vasName];
     }
 
@@ -115,9 +120,13 @@ class SubscriberPlanResponse {
           .map((e) => CurrentPlan.fromJson(e as Map<String, dynamic>))
           .toList(),
       currentVasPlans: vasList
-          .map((e) => CurrentVasPlan.fromJson(e as Map<String, dynamic>, remarksMap: remarksMap))
+          .map(
+            (e) => CurrentVasPlan.fromJson(
+              e as Map<String, dynamic>,
+              remarksMap: remarksMap,
+            ),
+          )
           .toList(),
     );
   }
 }
-

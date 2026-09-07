@@ -13,12 +13,16 @@ class ProfileScreen extends ConsumerWidget {
     final authState = ref.watch(authNotifierProvider);
     final users = authState.users;
     final activeUser = authState.activeUser;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       children: [
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => ref.refresh(customerDetailProvider.future),
+            onRefresh: () async {
+              ref.invalidate(customerDetailProvider);
+            },
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -59,12 +63,12 @@ class ProfileScreen extends ConsumerWidget {
 
                 const SizedBox(height: 32),
 
-                // User Switcher Section
-                if (users.length > 1 && activeUser != null) ...[
+                // Accounts Section
+                if (activeUser != null) ...[
                   const Padding(
                     padding: EdgeInsets.only(left: 8, bottom: 8),
                     child: Text(
-                      'Switch Account',
+                      'Accounts',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -72,7 +76,16 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   Card(
-                    margin: EdgeInsets.zero,
+                     elevation: 0,
+      color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
+        ),
+      ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: users.map((u) {
@@ -137,8 +150,20 @@ class ProfileScreen extends ConsumerWidget {
     BuildContext context,
     CustomerDetail customer,
   ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
-      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

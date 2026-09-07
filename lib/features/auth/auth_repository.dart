@@ -79,18 +79,16 @@ class AuthRepository {
   Future<void> forgotPassword(String username) async {
     final response = await _dio.post(
       '/ForgotPassword',
-      data: {
-        'loginType': 'Customer',
-        'userId': username,
-        'Alias': '',
-      },
+      data: {'loginType': 'Customer', 'userId': username, 'Alias': ''},
     );
 
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final returnCode = data['ReturnCode'] ?? data['returnCode'];
       if (returnCode != null && returnCode != 0) {
-        throw AuthException(data['ReturnMessage']?.toString() ?? 'Failed to request password');
+        throw AuthException(
+          data['ReturnMessage']?.toString() ?? 'Failed to request password',
+        );
       }
     }
   }

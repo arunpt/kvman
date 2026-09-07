@@ -46,10 +46,11 @@ class HomeScreen extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                if (customerData != null) _buildSmartBanner(context, customerData, isDark),
+                if (customerData != null)
+                  _buildSmartBanner(context, customerData, isDark),
                 _buildPlanCard(context, planData, isDark),
                 const SizedBox(height: 16),
-                
+
                 // Data Usage & Expiry Section
                 customerDetailAsync.when(
                   skipLoadingOnRefresh: false,
@@ -69,7 +70,8 @@ class HomeScreen extends ConsumerWidget {
                       _buildExpirySkeleton(context, isDark),
                     ],
                   ),
-                  error: (e, st) => Center(child: Text('Failed to load usage details: $e')),
+                  error: (e, st) =>
+                      Center(child: Text('Failed to load usage details: $e')),
                 ),
               ],
             );
@@ -97,12 +99,18 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSmartBanner(BuildContext context, CustomerDetail customer, bool isDark) {
+  Widget _buildSmartBanner(
+    BuildContext context,
+    CustomerDetail customer,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
-    
-    final bool isLowData = customer.primaryAllocatedQuotaMB > 0 &&
+
+    final bool isLowData =
+        customer.primaryAllocatedQuotaMB > 0 &&
         (customer.primaryUsedQuotaMB / customer.primaryAllocatedQuotaMB) >= 0.9;
-    final bool isExpiringSoon = customer.planRemainingDays > 0 && customer.planRemainingDays <= 3;
+    final bool isExpiringSoon =
+        customer.planRemainingDays > 0 && customer.planRemainingDays <= 3;
     final bool isExpired = customer.planRemainingDays <= 0;
 
     if (!isLowData && !isExpiringSoon && !isExpired) {
@@ -171,22 +179,32 @@ class HomeScreen extends ConsumerWidget {
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Payment gateway integration pending.')),
+                const SnackBar(
+                  content: Text('Payment gateway integration pending.'),
+                ),
               );
             },
-            child: Text(isLowData && !isExpiringSoon && !isExpired ? 'Top Up' : 'Renew', style: const TextStyle(fontSize: 12)),
+            child: Text(
+              isLowData && !isExpiringSoon && !isExpired ? 'Top Up' : 'Renew',
+              style: const TextStyle(fontSize: 12),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPlanCard(BuildContext context, SubscriberPlanResponse planData, bool isDark) {
+  Widget _buildPlanCard(
+    BuildContext context,
+    SubscriberPlanResponse planData,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-    
+
     final plan = planData.currentPlans.first;
     final isActive = plan.status.toLowerCase() == 'active';
+    final hasVas = planData.currentVasPlans.isNotEmpty;
 
     // Status colors
     final statusColor = isActive ? Colors.green : Colors.red;
@@ -198,7 +216,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: InkWell(
@@ -220,21 +240,17 @@ class HomeScreen extends ConsumerWidget {
                       height: 52,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isDark 
-                            ? Colors.white.withAlpha(8) 
+                        color: isDark
+                            ? Colors.white.withAlpha(8)
                             : primaryColor.withAlpha(12),
                         border: Border.all(
-                          color: isDark 
-                              ? Colors.white.withAlpha(12) 
+                          color: isDark
+                              ? Colors.white.withAlpha(12)
                               : primaryColor.withAlpha(25),
                         ),
                       ),
                       child: Center(
-                        child: Icon(
-                          Icons.wifi,
-                          color: primaryColor,
-                          size: 28,
-                        ),
+                        child: Icon(Icons.wifi, color: primaryColor, size: 28),
                       ),
                     ),
                     Positioned(
@@ -246,22 +262,20 @@ class HomeScreen extends ConsumerWidget {
                           color: statusColor,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+                            color: isDark
+                                ? const Color(0xFF16161E)
+                                : theme.colorScheme.surface,
                             width: 2,
                           ),
                         ),
-                        child: Icon(
-                          statusIcon,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                        child: Icon(statusIcon, size: 14, color: Colors.white),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Plan Details Body
               Expanded(
                 child: Column(
@@ -275,14 +289,40 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      plan.planName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            plan.planName,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (hasVas)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withAlpha(30),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '+ VAS',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -290,7 +330,9 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           '₹${plan.mrp} / month',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                            color: theme.textTheme.bodySmall?.color?.withAlpha(
+                              180,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -318,7 +360,11 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showPlanDetailsBottomSheet(BuildContext context, SubscriberPlanResponse planData, bool isDark) {
+  void _showPlanDetailsBottomSheet(
+    BuildContext context,
+    SubscriberPlanResponse planData,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final plan = planData.currentPlans.first;
@@ -392,10 +438,14 @@ class HomeScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                  color: isDark
+                      ? Colors.white.withAlpha(10)
+                      : Colors.black.withAlpha(5),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(15),
+                    color: isDark
+                        ? Colors.white.withAlpha(15)
+                        : Colors.black.withAlpha(15),
                   ),
                 ),
                 child: Column(
@@ -411,15 +461,25 @@ class HomeScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       plan.planName,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         buildDetailItem('Price', '₹${plan.mrp}'),
-                        buildDetailItem('Speed', plan.primarySpeed.isNotEmpty ? plan.primarySpeed : 'N/A'),
-                        buildDetailItem('Validity', plan.validity.isNotEmpty ? plan.validity : 'N/A'),
+                        buildDetailItem(
+                          'Speed',
+                          plan.primarySpeed.isNotEmpty
+                              ? plan.primarySpeed
+                              : 'N/A',
+                        ),
+                        buildDetailItem(
+                          'Validity',
+                          plan.validity.isNotEmpty ? plan.validity : 'N/A',
+                        ),
                       ],
                     ),
                   ],
@@ -429,7 +489,11 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    Icon(Icons.stars_rounded, color: Colors.amber.shade600, size: 20),
+                    Icon(
+                      Icons.stars_rounded,
+                      color: Colors.amber.shade600,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Value Added Services',
@@ -450,10 +514,14 @@ class HomeScreen extends ConsumerWidget {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+                          color: isDark
+                              ? Colors.white.withAlpha(10)
+                              : Colors.black.withAlpha(5),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(15),
+                            color: isDark
+                                ? Colors.white.withAlpha(15)
+                                : Colors.black.withAlpha(15),
                           ),
                         ),
                         child: Row(
@@ -464,7 +532,11 @@ class HomeScreen extends ConsumerWidget {
                                 color: Colors.amber.withAlpha(25),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.workspace_premium, color: Colors.amber, size: 28),
+                              child: const Icon(
+                                Icons.workspace_premium,
+                                color: Colors.amber,
+                                size: 28,
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -473,40 +545,71 @@ class HomeScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     vas.vasPlanName,
-                                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
-                                  if (vas.vasPlanRemark != null && vas.vasPlanRemark!.isNotEmpty) ...[
+                                  if (vas.vasPlanRemark != null &&
+                                      vas.vasPlanRemark!.isNotEmpty) ...[
                                     const SizedBox(height: 10),
                                     Wrap(
                                       spacing: 6,
                                       runSpacing: 6,
-                                      children: vas.vasPlanRemark!.split(',').where((e) => e.trim().isNotEmpty).map((app) {
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(10),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: isDark ? Colors.white.withAlpha(30) : Colors.black.withAlpha(20),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            app.trim(),
-                                            style: theme.textTheme.labelSmall?.copyWith(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
+                                      children: vas.vasPlanRemark!
+                                          .split(',')
+                                          .where((e) => e.trim().isNotEmpty)
+                                          .map((app) {
+                                            return Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: isDark
+                                                    ? Colors.white.withAlpha(20)
+                                                    : Colors.black.withAlpha(
+                                                        10,
+                                                      ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: isDark
+                                                      ? Colors.white.withAlpha(
+                                                          30,
+                                                        )
+                                                      : Colors.black.withAlpha(
+                                                          20,
+                                                        ),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                app.trim(),
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                              ),
+                                            );
+                                          })
+                                          .toList(),
                                     ),
-                                  ] else if (vas.chargeName != null && vas.chargeName!.isNotEmpty) ...[
+                                  ] else if (vas.chargeName != null &&
+                                      vas.chargeName!.isNotEmpty) ...[
                                     const SizedBox(height: 6),
                                     Text(
                                       vas.chargeName!,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
-                                        height: 1.4,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: theme
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.color
+                                                ?.withAlpha(180),
+                                            height: 1.4,
+                                          ),
                                     ),
                                   ],
                                 ],
@@ -519,16 +622,18 @@ class HomeScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '${vas.noOfDaysRemaining} Days',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: primaryColor,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryColor,
+                                        ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Left',
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                                      color: theme.textTheme.bodySmall?.color
+                                          ?.withAlpha(180),
                                     ),
                                   ),
                                 ],
@@ -552,7 +657,10 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -562,26 +670,37 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDataUsageCard(BuildContext context, WidgetRef ref, CustomerDetail customer, bool isDark) {
+  Widget _buildDataUsageCard(
+    BuildContext context,
+    WidgetRef ref,
+    CustomerDetail customer,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
     final totalGB = (customer.primaryAllocatedQuotaMB / 1024).round();
-    final usedGB = (customer.primaryUsedQuotaMB / 1024).toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '');
-    
+    final usedGB = (customer.primaryUsedQuotaMB / 1024)
+        .toStringAsFixed(2)
+        .replaceAll(RegExp(r'\.00$'), '');
+
     final totalDataFormatted = totalGB == 0 ? 'Unlimited' : '$totalGB GB';
     final usedDataStr = '$usedGB GB';
-    
+
     double progress = 0.0;
     if (customer.primaryAllocatedQuotaMB > 0) {
-      progress = (customer.primaryUsedQuotaMB / customer.primaryAllocatedQuotaMB).clamp(0.0, 1.0);
+      progress =
+          (customer.primaryUsedQuotaMB / customer.primaryAllocatedQuotaMB)
+              .clamp(0.0, 1.0);
     } else {
-      progress = 1.0; 
+      progress = 1.0;
     }
 
     String cycleRange = 'Current cycle';
-    if (customer.planActivationDate != null && customer.planExpiryDate != null) {
-      final start = DateFormat("d MMM yyyy").format(customer.planActivationDate!);
+    if (customer.planActivationDate != null &&
+        customer.planExpiryDate != null) {
+      final start = DateFormat("d MMM yyyy")
+          .format(customer.planActivationDate!);
       final end = DateFormat("d MMM yyyy").format(customer.planExpiryDate!);
       cycleRange = '$start – $end';
     }
@@ -592,7 +711,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -619,7 +740,7 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Middle Body Row
             Row(
               children: [
@@ -641,7 +762,9 @@ class HomeScreen extends ConsumerWidget {
                             return CircularProgressIndicator(
                               value: value,
                               strokeWidth: 12,
-                              backgroundColor: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                              backgroundColor: isDark
+                                  ? Colors.white.withAlpha(12)
+                                  : Colors.black.withAlpha(12),
                               color: primaryColor,
                               strokeCap: StrokeCap.round,
                             );
@@ -654,7 +777,8 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Used',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
+                              color: theme.textTheme.bodyMedium?.color
+                                  ?.withAlpha(180),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -668,7 +792,8 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'of $totalDataFormatted',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                              color: theme.textTheme.bodySmall?.color
+                                  ?.withAlpha(180),
                             ),
                           ),
                         ],
@@ -693,7 +818,9 @@ class HomeScreen extends ConsumerWidget {
                       Text(
                         'Keep track of your usage to avoid overages.',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                          color: theme.textTheme.bodySmall?.color?.withAlpha(
+                            180,
+                          ),
                           height: 1.4,
                         ),
                       ),
@@ -709,9 +836,14 @@ class HomeScreen extends ConsumerWidget {
               onTap: () => context.go('/usage'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                  color: isDark
+                      ? Colors.white.withAlpha(12)
+                      : Colors.black.withAlpha(12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -736,7 +868,8 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Current cycle',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                              color: theme.textTheme.bodySmall?.color
+                                  ?.withAlpha(180),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -763,20 +896,31 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildExpiryCard(BuildContext context, CustomerDetail customer, bool isDark) {
+  Widget _buildExpiryCard(
+    BuildContext context,
+    CustomerDetail customer,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
-    final calculatedTotal = customer.planRemainingDays + customer.planActiveDays;
+    final calculatedTotal =
+        customer.planRemainingDays + customer.planActiveDays;
     final totalDays = calculatedTotal > 0 ? calculatedTotal : 1;
     final progressDays = customer.planUsedDays;
     final remainingDays = customer.planRemainingDays;
-    
-    String startText = customer.planActivationDate != null ? DateFormat("d MMM yyyy").format(customer.planActivationDate!) : '';
-    String endText = customer.planExpiryDate != null ? DateFormat("d MMM yyyy").format(customer.planExpiryDate!) : '';
-    
+
+    String startText = customer.planActivationDate != null
+        ? DateFormat("d MMM yyyy").format(customer.planActivationDate!)
+        : '';
+    String endText = customer.planExpiryDate != null
+        ? DateFormat("d MMM yyyy").format(customer.planExpiryDate!)
+        : '';
+
     final progress = (progressDays / totalDays).clamp(0.0, 1.0);
-    final remainingStr = remainingDays < 0 ? 'Expired' : '$remainingDays days left';
+    final remainingStr = remainingDays < 0
+        ? 'Expired'
+        : '$remainingDays days left';
 
     return Card(
       elevation: 0,
@@ -784,7 +928,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -821,7 +967,9 @@ class HomeScreen extends ConsumerWidget {
                   return LinearProgressIndicator(
                     value: value,
                     minHeight: 12,
-                    backgroundColor: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                    backgroundColor: isDark
+                        ? Colors.white.withAlpha(12)
+                        : Colors.black.withAlpha(12),
                     valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                   );
                 },
@@ -861,9 +1009,8 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             'Quick Actions',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
         Row(
@@ -908,7 +1055,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -927,14 +1076,18 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   onPressed: null,
-                  icon: Icon(Icons.refresh, color: theme.disabledColor, size: 22),
+                  icon: Icon(
+                    Icons.refresh,
+                    color: theme.disabledColor,
+                    size: 22,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Middle Body Row
             Row(
               children: [
@@ -951,7 +1104,9 @@ class HomeScreen extends ConsumerWidget {
                         child: CircularProgressIndicator(
                           value: 0.0,
                           strokeWidth: 12,
-                          backgroundColor: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                          backgroundColor: isDark
+                              ? Colors.white.withAlpha(12)
+                              : Colors.black.withAlpha(12),
                           color: primaryColor,
                           strokeCap: StrokeCap.round,
                         ),
@@ -962,7 +1117,8 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Used',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
+                              color: theme.textTheme.bodyMedium?.color
+                                  ?.withAlpha(180),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -986,7 +1142,9 @@ class HomeScreen extends ConsumerWidget {
                       Text(
                         'Keep track of your usage to avoid overages.',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                          color: theme.textTheme.bodySmall?.color?.withAlpha(
+                            180,
+                          ),
                           height: 1.4,
                         ),
                       ),
@@ -1001,7 +1159,9 @@ class HomeScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+                color: isDark
+                    ? Colors.white.withAlpha(12)
+                    : Colors.black.withAlpha(12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -1026,7 +1186,9 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           'Current cycle',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodySmall?.color?.withAlpha(180),
+                            color: theme.textTheme.bodySmall?.color?.withAlpha(
+                              180,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -1057,7 +1219,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -1076,9 +1240,13 @@ class HomeScreen extends ConsumerWidget {
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isDark ? Colors.white.withAlpha(8) : primaryColor.withAlpha(12),
+                      color: isDark
+                          ? Colors.white.withAlpha(8)
+                          : primaryColor.withAlpha(12),
                       border: Border.all(
-                        color: isDark ? Colors.white.withAlpha(12) : primaryColor.withAlpha(25),
+                        color: isDark
+                            ? Colors.white.withAlpha(12)
+                            : primaryColor.withAlpha(25),
                       ),
                     ),
                     child: Center(
@@ -1094,18 +1262,24 @@ class HomeScreen extends ConsumerWidget {
                         color: isDark ? Colors.grey[800] : Colors.grey[300],
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+                          color: isDark
+                              ? const Color(0xFF16161E)
+                              : theme.colorScheme.surface,
                           width: 2,
                         ),
                       ),
-                      child: const Icon(Icons.circle, size: 14, color: Colors.transparent),
+                      child: const Icon(
+                        Icons.circle,
+                        size: 14,
+                        color: Colors.transparent,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Plan Details Body
             Expanded(
               child: Column(
@@ -1130,7 +1304,7 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-  
+
   Widget _buildExpirySkeleton(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
 
@@ -1140,7 +1314,9 @@ class HomeScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -1177,9 +1353,13 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _shimmerBox(double width, double height, bool isDark) {
-    final baseColor = isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(20);
-    final highlightColor = isDark ? Colors.white.withAlpha(40) : Colors.black.withAlpha(40);
-    
+    final baseColor = isDark
+        ? Colors.white.withAlpha(20)
+        : Colors.black.withAlpha(20);
+    final highlightColor = isDark
+        ? Colors.white.withAlpha(40)
+        : Colors.black.withAlpha(40);
+
     return Shimmer.fromColors(
       baseColor: baseColor,
       highlightColor: highlightColor,

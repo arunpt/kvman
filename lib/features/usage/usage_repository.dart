@@ -34,12 +34,15 @@ class UsageRepository {
 
   UsageRepository(this._dio);
 
-  Future<UsageData> fetchUsageData({required int month, required int year}) async {
+  Future<UsageData> fetchUsageData({
+    required int month,
+    required int year,
+  }) async {
     final response = await _dio.post(
       '/SessionList',
       data: {'month': month, 'year': year},
     );
-    
+
     final data = response.data;
     if (data is! Map<String, dynamic>) {
       throw Exception('Invalid response format');
@@ -47,18 +50,20 @@ class UsageRepository {
 
     final returnCode = data['ReturnCode'] ?? data['returnCode'];
     if (returnCode != null && returnCode != 0) {
-      throw Exception(data['ReturnMessage']?.toString() ?? 'Failed to load usage data');
+      throw Exception(
+        data['ReturnMessage']?.toString() ?? 'Failed to load usage data',
+      );
     }
 
     final summary = UsageSummary.fromJson(data);
-    
+
     final list = data['AccountSessionList'] as List<dynamic>?;
-    final sessions = list != null 
-        ? list.map((e) => SessionItem.fromJson(e as Map<String, dynamic>)).toList()
+    final sessions = list != null
+        ? list
+              .map((e) => SessionItem.fromJson(e as Map<String, dynamic>))
+              .toList()
         : <SessionItem>[];
 
     return UsageData(summary: summary, sessions: sessions);
   }
 }
-
-

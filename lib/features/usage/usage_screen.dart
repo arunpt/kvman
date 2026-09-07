@@ -19,7 +19,19 @@ class UsageScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(usageDataProvider);
-          await ref.read(usageDataProvider.future).catchError((_) => const UsageData(summary: UsageSummary(totalTime: '', totalVolume: '', downloadData: '', uploadData: ''), sessions: []));
+          await ref
+              .read(usageDataProvider.future)
+              .catchError(
+                (_) => const UsageData(
+                  summary: UsageSummary(
+                    totalTime: '',
+                    totalVolume: '',
+                    downloadData: '',
+                    uploadData: '',
+                  ),
+                  sessions: [],
+                ),
+              );
         },
         child: usageAsync.when(
           skipLoadingOnRefresh: false,
@@ -32,7 +44,11 @@ class UsageScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: theme.colorScheme.error,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load usage data',
@@ -77,16 +93,24 @@ class UsageScreen extends ConsumerWidget {
                         ),
                         InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () => _showMonthPicker(context, ref, filter, isDark),
+                          onTap: () =>
+                              _showMonthPicker(context, ref, filter, isDark),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primary.withAlpha(25),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.calendar_month, size: 18, color: theme.colorScheme.primary),
+                                Icon(
+                                  Icons.calendar_month,
+                                  size: 18,
+                                  color: theme.colorScheme.primary,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Change',
@@ -111,7 +135,10 @@ class UsageScreen extends ConsumerWidget {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 8.0,
+                    ),
                     child: Text(
                       'Session History',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -127,11 +154,17 @@ class UsageScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.history_toggle_off_outlined, size: 64, color: Colors.grey),
+                          const Icon(
+                            Icons.history_toggle_off_outlined,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'No sessions found',
-                            style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -139,21 +172,23 @@ class UsageScreen extends ConsumerWidget {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final session = data.sessions[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: _buildSessionCard(context, session, isDark),
-                          );
-                        },
-                        childCount: data.sessions.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final session = data.sessions[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildSessionCard(context, session, isDark),
+                        );
+                      }, childCount: data.sessions.length),
                     ),
                   ),
-                const SliverPadding(padding: EdgeInsets.only(bottom: 80)), // Bottom padding
+                const SliverPadding(
+                  padding: EdgeInsets.only(bottom: 80),
+                ), // Bottom padding
               ],
             );
           },
@@ -162,7 +197,11 @@ class UsageScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(BuildContext context, UsageSummary summary, bool isDark) {
+  Widget _buildSummaryCard(
+    BuildContext context,
+    UsageSummary summary,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
@@ -172,7 +211,9 @@ class UsageScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -183,20 +224,24 @@ class UsageScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: _buildSummaryItem(
-                    context, 
-                    'Total Data', 
-                    summary.totalVolume, 
+                    context,
+                    'Total Data',
+                    summary.totalVolume,
                     Icons.data_usage,
                     primaryColor,
                     isDark,
                   ),
                 ),
-                Container(width: 1, height: 50, color: isDark ? Colors.white10 : Colors.black12),
+                Container(
+                  width: 1,
+                  height: 50,
+                  color: isDark ? Colors.white10 : Colors.black12,
+                ),
                 Expanded(
                   child: _buildSummaryItem(
-                    context, 
-                    'Duration', 
-                    summary.totalTime, 
+                    context,
+                    'Duration',
+                    summary.totalTime,
                     Icons.timer_outlined,
                     Colors.orange,
                     isDark,
@@ -212,13 +257,27 @@ class UsageScreen extends ConsumerWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_circle_down, color: Colors.green, size: 20),
+                      Icon(
+                        Icons.arrow_circle_down,
+                        color: Colors.green,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Download', style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
-                          Text(summary.downloadData, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Download',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            summary.downloadData,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -232,8 +291,18 @@ class UsageScreen extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Upload', style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
-                          Text(summary.uploadData, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Upload',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            summary.uploadData,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -247,7 +316,14 @@ class UsageScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryItem(BuildContext context, String label, String value, IconData icon, Color color, bool isDark) {
+  Widget _buildSummaryItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
     return Column(
       children: [
@@ -269,24 +345,28 @@ class UsageScreen extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.grey,
-          ),
+          style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
         ),
       ],
     );
   }
 
-  Widget _buildSessionCard(BuildContext context, SessionItem session, bool isDark) {
+  Widget _buildSessionCard(
+    BuildContext context,
+    SessionItem session,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
-    
+
     return Card(
       elevation: 0,
       color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(12),
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
         ),
       ),
       child: Padding(
@@ -303,18 +383,25 @@ class UsageScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'Start: ${session.startDateStr}',
-                        style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'End: ${session.endDateStr}',
-                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withAlpha(25),
                     borderRadius: BorderRadius.circular(12),
@@ -339,22 +426,36 @@ class UsageScreen extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Text(
                       session.duration,
-                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.arrow_downward, size: 16, color: Colors.green),
+                    const Icon(
+                      Icons.arrow_downward,
+                      size: 16,
+                      color: Colors.green,
+                    ),
                     Text(
                       session.downloadStr,
-                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    const Icon(Icons.arrow_upward, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.arrow_upward,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     Text(
                       session.uploadStr,
-                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -384,9 +485,13 @@ class UsageScreen extends ConsumerWidget {
   }
 
   Widget _shimmerBox(double width, double height, bool isDark) {
-    final baseColor = isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(20);
-    final highlightColor = isDark ? Colors.white.withAlpha(40) : Colors.black.withAlpha(40);
-    
+    final baseColor = isDark
+        ? Colors.white.withAlpha(20)
+        : Colors.black.withAlpha(20);
+    final highlightColor = isDark
+        ? Colors.white.withAlpha(40)
+        : Colors.black.withAlpha(40);
+
     return Shimmer.fromColors(
       baseColor: baseColor,
       highlightColor: highlightColor,
@@ -401,7 +506,12 @@ class UsageScreen extends ConsumerWidget {
     );
   }
 
-  void _showMonthPicker(BuildContext context, WidgetRef ref, DateTime current, bool isDark) {
+  void _showMonthPicker(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime current,
+    bool isDark,
+  ) {
     final now = DateTime.now();
     showModalBottomSheet(
       context: context,
@@ -424,7 +534,8 @@ class UsageScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'Select Month',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -434,19 +545,27 @@ class UsageScreen extends ConsumerWidget {
                   // Calculate the month historically
                   // e.g., if now is Jan 2026, month - 1 is Dec 2025
                   final date = DateTime(now.year, now.month - index);
-                  final isSelected = date.year == current.year && date.month == current.month;
-                  
+                  final isSelected =
+                      date.year == current.year && date.month == current.month;
+
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                     title: Text(
                       DateFormat('MMMM yyyy').format(date),
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
                       ),
                     ),
-                    trailing: isSelected 
-                        ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary) 
+                    trailing: isSelected
+                        ? Icon(
+                            Icons.check,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
                         : null,
                     onTap: () {
                       ref.read(usageFilterProvider.notifier).updateDate(date);
