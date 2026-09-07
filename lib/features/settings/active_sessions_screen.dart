@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:kvman/features/settings/active_sessions_repository.dart';
 import 'package:kvman/features/settings/active_session_model.dart';
+
+class TerminatingSessionNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void setTerminatingId(String? id) => state = id;
+}
+
+final terminatingSessionIdProvider =
+    NotifierProvider<TerminatingSessionNotifier, String?>(
+      TerminatingSessionNotifier.new,
+    );
 
 class ActiveSessionsScreen extends ConsumerWidget {
   const ActiveSessionsScreen({super.key});
@@ -24,55 +36,155 @@ class ActiveSessionsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(activeSessionsProvider);
-        },
-        child: sessionsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => ListView(
-            padding: const EdgeInsets.all(32),
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading sessions:\n$err',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(activeSessionsProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-          data: (sessions) {
-            if (sessions.isEmpty) {
-              return ListView(
-                padding: const EdgeInsets.all(32),
-                children: const [
-                  Center(child: Text('No active sessions found.')),
-                ],
-              );
-            }
-
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: sessions.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final session = sessions[index];
-                return _buildSessionCard(context, session, isDark);
-              },
-            );
-          },
+      body: sessionsAsync.when(
+        skipLoadingOnRefresh: false,
+        loading: () => _buildShimmer(context, isDark),
+        error: (err, stack) => ListView(
+          padding: const EdgeInsets.all(32),
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error loading sessions:\n$err', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton.tonal(
+              onPressed: () => ref.invalidate(activeSessionsProvider),
+              child: const Text('Retry'),
+            ),
+          ],
         ),
+        data: (sessions) {
+          if (sessions.isEmpty) {
+            return ListView(
+              padding: const EdgeInsets.all(32),
+              children: const [
+                Center(child: Text('No active sessions found.')),
+              ],
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: sessions.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final session = sessions[index];
+              return _buildSessionCard(context, ref, session, isDark);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildShimmer(BuildContext context, bool isDark) {
+    final baseColor = isDark
+        ? Colors.white.withAlpha(20)
+        : Colors.black.withAlpha(20);
+    final highlightColor = isDark
+        ? Colors.white.withAlpha(40)
+        : Colors.black.withAlpha(40);
+    final theme = Theme.of(context);
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: 3,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        return Card(
+          elevation: 0,
+          color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isDark
+                  ? Colors.white.withAlpha(12)
+                  : Colors.black.withAlpha(12),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Shimmer.fromColors(
+              baseColor: baseColor,
+              highlightColor: highlightColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 16,
+                              color: Colors.white,
+                              margin: const EdgeInsets.only(right: 64),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 100,
+                              height: 12,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(height: 1, color: Colors.white),
+                  const SizedBox(height: 16),
+                  _buildSkeletonRow(),
+                  _buildSkeletonRow(),
+                  _buildSkeletonRow(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSkeletonRow() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 14,
+              color: Colors.white,
+              margin: const EdgeInsets.only(right: 32),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Container(
+              height: 14,
+              color: Colors.white,
+              margin: const EdgeInsets.only(left: 32),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSessionCard(
     BuildContext context,
+    WidgetRef ref,
     ActiveSession session,
     bool isDark,
   ) {
@@ -104,6 +216,10 @@ class ActiveSessionsScreen extends ConsumerWidget {
         : session.deviceName;
     if (displayName.isEmpty) displayName = 'Unknown Device';
 
+    final terminatingId = ref.watch(terminatingSessionIdProvider);
+    final isTerminating = terminatingId == session.sessionId;
+    final isAnyTerminating = terminatingId != null;
+
     return Card(
       elevation: 0,
       color: isDark ? const Color(0xFF16161E) : theme.colorScheme.surface,
@@ -118,7 +234,7 @@ class ActiveSessionsScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
@@ -163,6 +279,57 @@ class ActiveSessionsScreen extends ConsumerWidget {
             _buildDetailRow(context, 'App Version', session.appVersion),
             _buildDetailRow(context, 'Device', session.deviceName),
             _buildDetailRow(context, 'Login Time', formattedDate),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              onPressed: isAnyTerminating
+                  ? null
+                  : () async {
+                      ref
+                          .read(terminatingSessionIdProvider.notifier)
+                          .setTerminatingId(session.sessionId);
+                      try {
+                        await ref
+                            .read(activeSessionsRepositoryProvider)
+                            .logoutSession(session.sessionId);
+                        ref.invalidate(activeSessionsProvider);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Session successfully terminated.'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                e.toString().replaceAll('Exception: ', ''),
+                              ),
+                            ),
+                          );
+                        }
+                      } finally {
+                        ref
+                            .read(terminatingSessionIdProvider.notifier)
+                            .setTerminatingId(null);
+                      }
+                    },
+              icon: isTerminating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.logout, size: 18),
+              label: Text(
+                isTerminating ? 'Terminating...' : 'Terminate Session',
+              ),
+              style: FilledButton.styleFrom(
+                foregroundColor: Colors.red,
+                backgroundColor: Colors.red.withAlpha(isDark ? 20 : 30),
+              ),
+            ),
           ],
         ),
       ),
