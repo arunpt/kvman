@@ -22,7 +22,7 @@ class KvManApp extends ConsumerWidget {
         darkTheme: AppTheme.dark(darkDynamic),
         theme: AppTheme.light(lightDynamic),
         themeMode: themeMode,
-        title: 'KvMan',
+        title: 'KVMan',
         debugShowCheckedModeBanner: false,
         routerConfig: router,
         builder: (context, child) {

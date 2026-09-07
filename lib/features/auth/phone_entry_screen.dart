@@ -74,7 +74,7 @@ class _PhoneEntryScreenState extends ConsumerState<PhoneEntryScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Welcome to KvMan',
+                  'Welcome to KVMan',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

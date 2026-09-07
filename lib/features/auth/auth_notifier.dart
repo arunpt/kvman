@@ -118,7 +118,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final localAuth = LocalAuthentication();
       final didAuthenticate = await localAuth.authenticate(
-        localizedReason: 'Please authenticate to access KvMan',
+        localizedReason: 'Please authenticate to access KVMan',
         biometricOnly: false,
         persistAcrossBackgrounding: true,
       );

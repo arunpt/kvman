@@ -116,9 +116,9 @@ class SettingsScreen extends ConsumerWidget {
           onTap: () {
             showAboutDialog(
               context: context,
-              applicationName: 'KvMan',
+              applicationName: 'KVMan',
               applicationVersion: '1.0.0',
-              applicationLegalese: '© 2026 KvMan App.\n\nThis application is provided "as is", without warranty of any kind. Use of this application is at your own risk. The developers are not responsible for any data loss, damages, or issues arising from the use of this software.',
+              applicationLegalese: '© 2026 KVMan App.\n\nDISCLAIMER: This is an unofficial, third-party application built strictly for educational purposes. It utilizes read-only functionalities to improve ease of use. KVMan is NOT affiliated with, endorsed by, sponsored by, or in any way officially connected to the original service provider. All product and company names, logos, and brands are the property of their respective owners.\n\nThis software is provided "as is", without warranty of any kind. Use of this application is entirely at your own risk. The developers assume no legal liability or responsibility for any data loss, account issues, or damages arising from its use.',
               applicationIcon: const Icon(Icons.router, size: 48),
             );
           },

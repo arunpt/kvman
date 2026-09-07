@@ -28,7 +28,7 @@ class AppRoutes {
   static const activeSessions = '/active-sessions';
 }
 
-final titles = {0: 'KVMAN', 1: 'Usage', 2: 'Profile', 3: 'Settings'};
+final titles = {0: 'KVMan', 1: 'Usage', 2: 'Profile', 3: 'Settings'};
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -98,7 +98,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         builder: (context) => AlertDialog(
                           title: const Text('Log Out?'),
                           content: const Text(
-                            'Are you sure you want to log out of KvMan?',
+                            'Are you sure you want to log out of KVMan?',
                           ),
                           actions: [
                             TextButton(
