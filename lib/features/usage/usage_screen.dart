@@ -471,20 +471,189 @@ class UsageScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        _shimmerBox(double.infinity, 200, isDark),
-        const SizedBox(height: 24),
-        _shimmerBox(150, 24, isDark),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _shimmerBox(140, 28, isDark),
+            _shimmerBox(90, 36, isDark, borderRadius: 12),
+          ],
+        ),
         const SizedBox(height: 16),
-        _shimmerBox(double.infinity, 120, isDark),
+        _buildSummaryCardSkeleton(isDark),
+        const SizedBox(height: 24),
+        _shimmerBox(130, 22, isDark),
+        const SizedBox(height: 16),
+        _buildSessionCardSkeleton(isDark),
         const SizedBox(height: 12),
-        _shimmerBox(double.infinity, 120, isDark),
+        _buildSessionCardSkeleton(isDark),
         const SizedBox(height: 12),
-        _shimmerBox(double.infinity, 120, isDark),
+        _buildSessionCardSkeleton(isDark),
       ],
     );
   }
 
-  Widget _shimmerBox(double width, double height, bool isDark) {
+  Widget _buildSummaryCardSkeleton(bool isDark) {
+    return Card(
+      elevation: 0,
+      color: isDark ? const Color(0xFF16161E) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      _shimmerBox(44, 44, isDark, shape: BoxShape.circle),
+                      const SizedBox(height: 12),
+                      _shimmerBox(80, 20, isDark),
+                      const SizedBox(height: 4),
+                      _shimmerBox(60, 14, isDark),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 50,
+                  color: isDark ? Colors.white10 : Colors.black12,
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      _shimmerBox(44, 44, isDark, shape: BoxShape.circle),
+                      const SizedBox(height: 12),
+                      _shimmerBox(80, 20, isDark),
+                      const SizedBox(height: 4),
+                      _shimmerBox(60, 14, isDark),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Divider(color: isDark ? Colors.white10 : Colors.black12),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      _shimmerBox(20, 20, isDark, shape: BoxShape.circle),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _shimmerBox(60, 12, isDark),
+                          const SizedBox(height: 4),
+                          _shimmerBox(50, 16, isDark),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      _shimmerBox(20, 20, isDark, shape: BoxShape.circle),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _shimmerBox(50, 12, isDark),
+                          const SizedBox(height: 4),
+                          _shimmerBox(40, 16, isDark),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSessionCardSkeleton(bool isDark) {
+    return Card(
+      elevation: 0,
+      color: isDark ? const Color(0xFF16161E) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(12)
+              : Colors.black.withAlpha(12),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _shimmerBox(140, 14, isDark),
+                      const SizedBox(height: 8),
+                      _shimmerBox(100, 12, isDark),
+                    ],
+                  ),
+                ),
+                _shimmerBox(60, 24, isDark, borderRadius: 12),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    _shimmerBox(16, 16, isDark, shape: BoxShape.circle),
+                    const SizedBox(width: 8),
+                    _shimmerBox(50, 12, isDark),
+                  ],
+                ),
+                Row(
+                  children: [
+                    _shimmerBox(16, 16, isDark, shape: BoxShape.circle),
+                    const SizedBox(width: 4),
+                    _shimmerBox(40, 12, isDark),
+                    const SizedBox(width: 12),
+                    _shimmerBox(16, 16, isDark, shape: BoxShape.circle),
+                    const SizedBox(width: 4),
+                    _shimmerBox(40, 12, isDark),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _shimmerBox(
+    double width,
+    double height,
+    bool isDark, {
+    double borderRadius = 4,
+    BoxShape shape = BoxShape.rectangle,
+  }) {
     final baseColor = isDark
         ? Colors.white.withAlpha(20)
         : Colors.black.withAlpha(20);
@@ -500,7 +669,10 @@ class UsageScreen extends ConsumerWidget {
         height: height,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: shape == BoxShape.circle
+              ? null
+              : BorderRadius.circular(borderRadius),
+          shape: shape,
         ),
       ),
     );
