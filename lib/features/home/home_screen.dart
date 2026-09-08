@@ -38,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         builder: (context) => UpdateDialog(
           latestVersion: updateInfo.latestVersion,
           downloadUrl: updateInfo.downloadUrl,
+          changelog: updateInfo.changelog,
         ),
       );
     }

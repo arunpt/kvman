@@ -5,11 +5,13 @@ class UpdateInfo {
   final bool isUpdateAvailable;
   final String latestVersion;
   final String downloadUrl;
+  final String? changelog;
 
   UpdateInfo({
     required this.isUpdateAvailable,
     required this.latestVersion,
     required this.downloadUrl,
+    this.changelog,
   });
 }
 
@@ -61,10 +63,12 @@ class UpdateService {
           }
         }
 
+        String? changelog = data['body'] as String?;
         return UpdateInfo(
           isUpdateAvailable: isUpdateAvailable && downloadUrl.isNotEmpty,
           latestVersion: latestVersion,
           downloadUrl: downloadUrl,
+          changelog: changelog,
         );
       }
     } catch (e) {

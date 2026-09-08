@@ -6,11 +6,13 @@ import 'package:path_provider/path_provider.dart';
 class UpdateDialog extends StatefulWidget {
   final String latestVersion;
   final String downloadUrl;
+  final String? changelog;
 
   const UpdateDialog({
     super.key,
     required this.latestVersion,
     required this.downloadUrl,
+    this.changelog,
   });
 
   @override
@@ -81,6 +83,31 @@ class _UpdateDialogState extends State<UpdateDialog> {
           Text(
             'A new version of KVMan (v${widget.latestVersion}) is available.',
           ),
+          if (widget.changelog != null &&
+              widget.changelog!.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'What\'s new:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 150),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withAlpha(12)
+                    : Colors.black.withAlpha(12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SingleChildScrollView(
+                child: Text(
+                  widget.changelog!.trim(),
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           if (_isDownloading) ...[
             LinearProgressIndicator(value: _progress),

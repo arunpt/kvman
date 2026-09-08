@@ -54,6 +54,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         builder: (context) => UpdateDialog(
           latestVersion: updateInfo.latestVersion,
           downloadUrl: updateInfo.downloadUrl,
+          changelog: updateInfo.changelog,
         ),
       );
     } else {
