@@ -9,11 +9,42 @@ import 'package:kvman/features/home/subscriber_plan.dart';
 import 'package:kvman/features/profile/profile_repository.dart';
 import 'package:kvman/features/profile/customer_detail.dart';
 
-class HomeScreen extends ConsumerWidget {
+import 'package:kvman/features/update/update_service.dart';
+import 'package:kvman/features/update/update_dialog.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdates();
+    });
+  }
+
+  Future<void> _checkForUpdates() async {
+    final updateService = UpdateService();
+    final updateInfo = await updateService.checkForUpdate();
+    if (updateInfo.isUpdateAvailable && mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => UpdateDialog(
+          latestVersion: updateInfo.latestVersion,
+          downloadUrl: updateInfo.downloadUrl,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final planAsync = ref.watch(currentPlanProvider);
     final customerDetailAsync = ref.watch(customerDetailProvider);
     final theme = Theme.of(context);

@@ -1,5 +1,5 @@
 name: kvman
-description: "A new Flutter project."
+description: "An Unofficial client app for Kerala Vision Broadband"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -22,6 +22,9 @@ dependencies:
   intl: ^0.20.3
   local_auth: ^3.0.2
   url_launcher: ^6.3.2
+  package_info_plus: ^10.2.1
+  path_provider: ^2.1.6
+  open_filex: ^4.7.0
 
 dev_dependencies:
   flutter_test:

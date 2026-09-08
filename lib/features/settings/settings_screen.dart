@@ -5,12 +5,66 @@ import 'package:kvman/app/theme_provider.dart';
 import 'package:kvman/app/biometric_settings_provider.dart';
 import 'package:kvman/app/router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:kvman/features/update/update_service.dart';
+import 'package:kvman/features/update/update_dialog.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  String _appVersion = 'Loading...';
+  bool _isCheckingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = 'v${info.version}';
+    });
+  }
+
+  Future<void> _checkForUpdates() async {
+    setState(() {
+      _isCheckingUpdate = true;
+    });
+
+    final updateService = UpdateService();
+    final updateInfo = await updateService.checkForUpdate();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isCheckingUpdate = false;
+    });
+
+    if (updateInfo.isUpdateAvailable) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => UpdateDialog(
+          latestVersion: updateInfo.latestVersion,
+          downloadUrl: updateInfo.downloadUrl,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You are on the latest version!')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isBiometricEnabled = ref.watch(biometricSettingsProvider);
     final primaryColor = Theme.of(context).colorScheme.primary;
@@ -101,13 +155,25 @@ class SettingsScreen extends ConsumerWidget {
             }
           },
         ),
-        const ListTile(
-          leading: Icon(Icons.info_outline),
-          title: Text('App Version'),
+        ListTile(
+          leading: const Icon(Icons.info_outline),
+          title: const Text('App Version'),
           trailing: Text(
-            'v1.0.0 (Build 1)',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            _appVersion,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.system_update_alt),
+          title: const Text('Check for Updates'),
+          trailing: _isCheckingUpdate
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.chevron_right),
+          onTap: _isCheckingUpdate ? null : _checkForUpdates,
         ),
         ListTile(
           leading: const Icon(Icons.gavel_outlined),
@@ -117,7 +183,7 @@ class SettingsScreen extends ConsumerWidget {
             showAboutDialog(
               context: context,
               applicationName: 'KVMan',
-              applicationVersion: '1.0.0',
+              applicationVersion: _appVersion.split(' ').first,
               applicationLegalese: '© 2026 KVMan App.\n\nDISCLAIMER: This is an unofficial, third-party application built strictly for educational purposes. It utilizes read-only functionalities to improve ease of use. KVMan is NOT affiliated with, endorsed by, sponsored by, or in any way officially connected to the original service provider. All product and company names, logos, and brands are the property of their respective owners.\n\nThis software is provided "as is", without warranty of any kind. Use of this application is entirely at your own risk. The developers assume no legal liability or responsibility for any data loss, account issues, or damages arising from its use.',
               applicationIcon: const Icon(Icons.router, size: 48),
             );
