@@ -91,7 +91,7 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: const Text('View on GitHub'),
           trailing: const Icon(Icons.open_in_new, size: 20),
           onTap: () async {
-            final Uri url = Uri.parse('https://github.com/your-username/kvman');
+            final Uri url = Uri.parse('https://github.com/arunpt/kvman');
             if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
