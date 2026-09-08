@@ -32,7 +32,7 @@ The end result is exactly what I wanted. Instead of wading through a cluttered i
 ### Want to try it?
 
 **For Everyday Users:**
-1. Head over to the **Releases** tab on this GitHub repository.
+1. Head over to the [**Releases**](https://github.com/arunpt/kvman/releases) tab on this GitHub repository.
 2. Download the latest `.apk` file.
 3. Install it on your Android device and enjoy a cleaner experience!
 
