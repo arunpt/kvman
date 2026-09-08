@@ -29,7 +29,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadVersion() async {
     final info = await PackageInfo.fromPlatform();
     setState(() {
-      _appVersion = 'v${info.version}';
+      _appVersion = 'v${info.version} (Build ${info.buildNumber})';
     });
   }
 
