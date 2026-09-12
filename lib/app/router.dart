@@ -5,6 +5,9 @@ import 'package:kvman/features/auth/auth_notifier.dart';
 import 'package:kvman/features/auth/phone_entry_screen.dart';
 import 'package:kvman/features/auth/pin_entry_screen.dart';
 import 'package:kvman/features/auth/forgot_password_screen.dart';
+import 'package:kvman/features/billing/billing_screen.dart';
+import 'package:kvman/features/billing/transaction_history_screen.dart';
+import 'package:kvman/features/billing/plan_history_screen.dart';
 import 'package:kvman/features/home/home_screen.dart';
 import 'package:kvman/features/profile/profile_screen.dart';
 import 'package:kvman/features/usage/usage_screen.dart';
@@ -26,9 +29,18 @@ class AppRoutes {
   static const settings = '/settings';
   static const diagnostics = '/diagnostics';
   static const activeSessions = '/active-sessions';
+  static const billing = '/billing';
+  static const transactionHistory = '/billing/transactions';
+  static const planHistory = '/billing/plan-history';
 }
 
-final titles = {0: 'KVMan', 1: 'Usage', 2: 'Profile', 3: 'Settings'};
+final titles = {
+  0: 'KVMan',
+  1: 'Usage',
+  2: 'Billing',
+  3: 'Profile',
+  4: 'Settings',
+};
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -80,6 +92,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.activeSessions,
         builder: (context, state) => const ActiveSessionsScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.transactionHistory,
+        builder: (context, state) => const TransactionHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.planHistory,
+        builder: (context, state) => const PlanHistoryScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => DoubleTapToExit(
           child: Scaffold(
@@ -89,7 +109,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               actions: [
-                if (navigationShell.currentIndex == 2)
+                if (navigationShell.currentIndex == 3)
                   IconButton(
                     icon: const Icon(Icons.logout, color: Colors.red),
                     onPressed: () async {
@@ -148,6 +168,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   label: 'Usage',
                 ),
                 NavigationDestination(
+                  icon: Icon(Icons.payments_outlined),
+                  selectedIcon: Icon(Icons.payments),
+                  label: 'Billing',
+                ),
+                NavigationDestination(
                   icon: Icon(Icons.person_outline),
                   selectedIcon: Icon(Icons.person),
                   label: 'Profile',
@@ -175,6 +200,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.usage,
                 builder: (context, state) => const UsageScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.billing,
+                builder: (context, state) => const BillingScreen(),
               ),
             ],
           ),
