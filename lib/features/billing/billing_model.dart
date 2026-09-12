@@ -8,6 +8,7 @@ class TransactionItem {
   final String invoiceNo;
   final String status;
   final String purchaseMode;
+  final String templateId;
 
   TransactionItem({
     required this.paymentId,
@@ -17,6 +18,7 @@ class TransactionItem {
     required this.invoiceNo,
     required this.status,
     required this.purchaseMode,
+    required this.templateId,
   });
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class TransactionItem {
       invoiceNo: json['InvoiceNo'] ?? '',
       status: json['Status'] ?? '',
       purchaseMode: json['PurchaseMode'] ?? '',
+      templateId: json['TemplateId']?.toString() ?? '',
     );
   }
 
