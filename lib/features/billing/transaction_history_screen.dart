@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/features/billing/billing_provider.dart';
+import 'package:kvman/features/billing/billing_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:kvman/core/utils/logging.dart';
 
 class TransactionHistoryScreen extends ConsumerWidget {
   const TransactionHistoryScreen({super.key});
@@ -153,6 +156,7 @@ class TransactionHistoryScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 12.0),
                   child: Card(
                     elevation: 0,
+                    clipBehavior: Clip.antiAlias,
                     color: isDark
                         ? const Color(0xFF16161E)
                         : theme.colorScheme.surface,
@@ -220,18 +224,36 @@ class TransactionHistoryScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              _buildInfoColumn(
-                                context,
-                                'Invoice',
-                                item.invoiceNo,
+                              Expanded(
+                                child: _buildInfoColumn(
+                                  context,
+                                  'Invoice',
+                                  item.invoiceNo,
+                                ),
                               ),
-                              _buildInfoColumn(
-                                context,
-                                'Mode',
-                                item.purchaseMode,
+                              Expanded(
+                                child: _buildInfoColumn(
+                                  context,
+                                  'Mode',
+                                  item.purchaseMode,
+                                ),
                               ),
-                              _buildInfoColumn(context, 'Status', item.status),
+                              Expanded(
+                                child: _buildInfoColumn(
+                                  context,
+                                  'Status',
+                                  item.status,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.picture_as_pdf_outlined),
+                                color: theme.colorScheme.primary,
+                                tooltip: 'View Invoice PDF',
+                                onPressed: () =>
+                                    _downloadAndOpenInvoice(context, ref, item),
+                              ),
                             ],
                           ),
                         ],
@@ -245,6 +267,53 @@ class TransactionHistoryScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _downloadAndOpenInvoice(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionItem item,
+  ) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final repo = ref.read(billingRepositoryProvider);
+      final filePath = await repo.downloadInvoicePDF(
+        item.paymentId.toString(),
+        item.templateId,
+      );
+
+      // Close dialog
+      if (context.mounted) Navigator.pop(context);
+
+      final result = await OpenFilex.open(filePath);
+
+      if (result.type != ResultType.done && context.mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Could not open invoice: ${result.message}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context); // Close dialog
+      logger.e('Error downloading invoice: $e');
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Failed to download invoice')),
+      );
+    }
   }
 
   Widget _buildSpendingSummary(

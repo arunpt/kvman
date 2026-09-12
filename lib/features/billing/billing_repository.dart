@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:kvman/features/billing/billing_model.dart';
 import 'package:kvman/core/utils/logging.dart';
@@ -82,6 +85,33 @@ class BillingRepository {
     } catch (e) {
       logger.e('Failed to fetch plan history: $e');
       throw Exception('Failed to fetch plan history');
+    }
+  }
+
+  Future<String> downloadInvoicePDF(String paymentId, String templateId) async {
+    try {
+      final payload = {
+        "id": paymentId,
+        "templateId": templateId,
+        "TemplateName": null,
+        "CustomerId": null,
+      };
+
+      final response = await _dio.post(
+        '/GetInvoicePrint',
+        data: payload,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/invoice_$paymentId.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(response.data);
+
+      return filePath;
+    } catch (e) {
+      logger.e('Failed to download invoice: $e');
+      throw Exception('Failed to download invoice');
     }
   }
 }
