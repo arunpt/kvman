@@ -25,6 +25,7 @@ dependencies:
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
   open_filex: ^4.7.0
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

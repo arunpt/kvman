@@ -88,6 +88,25 @@ class BillingRepository {
     }
   }
 
+  Future<List<VasPlan>> getVasPlans() async {
+    try {
+      final response = await _dio.post('/GetVasPlanList');
+      final data = response.data;
+      if (data != null && data is Map<String, dynamic>) {
+        if (data.containsKey('VasPlanList') && data['VasPlanList'] != null) {
+          final list = data['VasPlanList'] as List;
+          return list
+              .map((e) => VasPlan.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      logger.e('Failed to fetch VAS plans: $e');
+      throw Exception('Failed to fetch VAS plans');
+    }
+  }
+
   Future<String> downloadInvoicePDF(String paymentId, String templateId) async {
     try {
       final payload = {

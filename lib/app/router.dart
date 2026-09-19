@@ -7,6 +7,7 @@ import 'package:kvman/features/auth/pin_entry_screen.dart';
 import 'package:kvman/features/auth/forgot_password_screen.dart';
 import 'package:kvman/features/billing/billing_screen.dart';
 import 'package:kvman/features/billing/transaction_history_screen.dart';
+import 'package:kvman/features/billing/browse_plans_screen.dart';
 import 'package:kvman/features/billing/plan_history_screen.dart';
 import 'package:kvman/features/home/home_screen.dart';
 import 'package:kvman/features/profile/profile_screen.dart';
@@ -32,6 +33,7 @@ class AppRoutes {
   static const billing = '/billing';
   static const transactionHistory = '/billing/transactions';
   static const planHistory = '/billing/plan-history';
+  static const browsePlans = '/browse-plans';
 }
 
 final titles = {
@@ -99,6 +101,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.planHistory,
         builder: (context, state) => const PlanHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.browsePlans,
+        builder: (context, state) => const BrowsePlansScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => DoubleTapToExit(
