@@ -16,8 +16,20 @@ class BrowsePlansScreen extends ConsumerStatefulWidget {
 
 enum PlanFilter { all, internet, ott }
 
+enum PlanSort { priceAsc, priceDesc, speedAsc, speedDesc }
+
 class _BrowsePlansScreenState extends ConsumerState<BrowsePlansScreen> {
   PlanFilter _planFilter = PlanFilter.all;
+  PlanSort _planSort = PlanSort.priceAsc;
+
+  double _extractSpeed(String speedString) {
+    final match = RegExp(r'([0-9.]+)').firstMatch(speedString);
+    if (match != null) {
+      return double.tryParse(match.group(1)!) ?? 0.0;
+    }
+    return 0.0;
+  }
+
   bool _isTransposed = false;
 
   @override
@@ -59,40 +71,101 @@ class _BrowsePlansScreenState extends ConsumerState<BrowsePlansScreen> {
                         filteredPlans = allPlans.where((p) => p.isOtt).toList();
                       }
 
+                      // Injecting Sort Logic Here
+                      if (_planSort == PlanSort.priceAsc) {
+                        filteredPlans.sort(
+                          (a, b) => a.price.compareTo(b.price),
+                        );
+                      } else if (_planSort == PlanSort.priceDesc) {
+                        filteredPlans.sort(
+                          (a, b) => b.price.compareTo(a.price),
+                        );
+                      } else if (_planSort == PlanSort.speedAsc) {
+                        filteredPlans.sort(
+                          (a, b) =>
+                              _extractSpeed(a.speed)
+                                  .compareTo(_extractSpeed(b.speed)),
+                        );
+                      } else if (_planSort == PlanSort.speedDesc) {
+                        filteredPlans.sort(
+                          (a, b) =>
+                              _extractSpeed(b.speed)
+                                  .compareTo(_extractSpeed(a.speed)),
+                        );
+                      }
+
                       return Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  ChoiceChip(
-                                    label: const Text('All Plans'),
-                                    selected: _planFilter == PlanFilter.all,
-                                    onSelected: (_) => setState(
-                                      () => _planFilter = PlanFilter.all,
+                            padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        ChoiceChip(
+                                          label: const Text('All Plans'),
+                                          selected:
+                                              _planFilter == PlanFilter.all,
+                                          onSelected: (_) => setState(
+                                            () => _planFilter = PlanFilter.all,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ChoiceChip(
+                                          label: const Text('Internet Only'),
+                                          selected:
+                                              _planFilter ==
+                                              PlanFilter.internet,
+                                          onSelected: (_) => setState(
+                                            () => _planFilter =
+                                                PlanFilter.internet,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ChoiceChip(
+                                          label: const Text('With OTT'),
+                                          selected:
+                                              _planFilter == PlanFilter.ott,
+                                          onSelected: (_) => setState(
+                                            () => _planFilter = PlanFilter.ott,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: const Text('Internet Only'),
-                                    selected:
-                                        _planFilter == PlanFilter.internet,
-                                    onSelected: (_) => setState(
-                                      () => _planFilter = PlanFilter.internet,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: const Text('With OTT'),
-                                    selected: _planFilter == PlanFilter.ott,
-                                    onSelected: (_) => setState(
-                                      () => _planFilter = PlanFilter.ott,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                PopupMenuButton<PlanSort>(
+                                  icon: const Icon(Icons.sort),
+                                  tooltip: 'Sort Plans',
+                                  onSelected: (PlanSort result) {
+                                    setState(() {
+                                      _planSort = result;
+                                    });
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<PlanSort>>[
+                                        const PopupMenuItem<PlanSort>(
+                                          value: PlanSort.priceAsc,
+                                          child: Text('Price: Low to High'),
+                                        ),
+                                        const PopupMenuItem<PlanSort>(
+                                          value: PlanSort.priceDesc,
+                                          child: Text('Price: High to Low'),
+                                        ),
+                                        const PopupMenuItem<PlanSort>(
+                                          value: PlanSort.speedAsc,
+                                          child: Text('Speed: Low to High'),
+                                        ),
+                                        const PopupMenuItem<PlanSort>(
+                                          value: PlanSort.speedDesc,
+                                          child: Text('Speed: High to Low'),
+                                        ),
+                                      ],
+                                ),
+                              ],
                             ),
                           ),
                           Expanded(
