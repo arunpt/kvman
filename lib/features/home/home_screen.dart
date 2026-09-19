@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kvman/app/router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kvman/features/home/home_repository.dart';
 import 'package:kvman/features/home/subscriber_plan.dart';
@@ -210,16 +211,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Payment gateway integration pending.'),
-                ),
-              );
+              context.push(AppRoutes.browsePlans);
             },
-            child: Text(
-              isLowData && !isExpiringSoon && !isExpired ? 'Top Up' : 'Renew',
-              style: const TextStyle(fontSize: 12),
-            ),
+            child: Text('View Plans', style: const TextStyle(fontSize: 12)),
           ),
         ],
       ),

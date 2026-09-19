@@ -55,7 +55,7 @@ class BillingScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Manage your recharges and keep track of all your internet payments in one place.',
+                  'Monitor your active internet packages and keep track of your past payments in one place.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey,
                     height: 1.4,
@@ -67,7 +67,29 @@ class BillingScreen extends StatelessWidget {
         ),
         const SizedBox(height: 32),
 
-        // Menu Section
+        // Plan Management Section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Text(
+            'Plan Management',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildMenuTile(
+          context: context,
+          icon: Icons.local_offer_outlined,
+          title: 'Browse Plans',
+          subtitle: 'View available broadband and OTT plans',
+          onTap: () {
+            context.push(AppRoutes.browsePlans);
+          },
+        ),
+        const SizedBox(height: 24),
+
+        // History Section
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: Text(
@@ -81,8 +103,8 @@ class BillingScreen extends StatelessWidget {
         _buildMenuTile(
           context: context,
           icon: Icons.history,
-          title: 'Plan History',
-          subtitle: 'View your previous recharge plans',
+          title: 'Past Subscriptions',
+          subtitle: 'View a timeline of your previously active packages',
           onTap: () {
             context.push(AppRoutes.planHistory);
           },
@@ -91,12 +113,25 @@ class BillingScreen extends StatelessWidget {
         _buildMenuTile(
           context: context,
           icon: Icons.receipt_long_outlined,
-          title: 'Transaction History',
-          subtitle: 'Track your payments and invoices',
+          title: 'Payment Invoices',
+          subtitle: 'Download receipts and track your payments',
           onTap: () {
             context.push(AppRoutes.transactionHistory);
           },
         ),
+        const SizedBox(height: 32),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            'Note: Plan upgrades and recharges must be made through the official Kerala Vision app or portal',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }

@@ -1,5 +1,47 @@
 import 'package:intl/intl.dart';
 
+class VasPlan {
+  final int id;
+  final String name;
+  final double price;
+  final String validity;
+  final List<String> ottBenefits;
+
+  VasPlan({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.validity,
+    required this.ottBenefits,
+  });
+
+  factory VasPlan.fromJson(Map<String, dynamic> json) {
+    String name = json['VasName']?.toString() ?? 'Unknown';
+    double price = 0.0;
+    if (json['TotalAmt'] != null)
+      price = double.tryParse(json['TotalAmt'].toString()) ?? 0.0;
+    String validity = json['Validity']?.toString() ?? 'N/A';
+
+    List<String> benefits = [];
+    String remark = json['VasPlanRemark']?.toString() ?? '';
+    if (remark.isNotEmpty) {
+      benefits = remark
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+
+    return VasPlan(
+      id: json['VasPlanId'] as int? ?? 0,
+      name: name,
+      price: price,
+      validity: validity,
+      ottBenefits: benefits,
+    );
+  }
+}
+
 class TransactionItem {
   final int paymentId;
   final String plan;

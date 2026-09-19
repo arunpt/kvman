@@ -84,3 +84,9 @@ final planHistoryProvider = FutureProvider<List<PlanHistoryItem>>((ref) async {
 
   return repo.getPlanHistory(username);
 });
+
+// --- VAS Plans Provider ---
+final vasPlansProvider = FutureProvider<List<VasPlan>>((ref) async {
+  final repo = ref.watch(billingRepositoryProvider);
+  return repo.getVasPlans();
+});
