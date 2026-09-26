@@ -12,11 +12,14 @@ class NetworkScreen extends ConsumerStatefulWidget {
 
 class _NetworkScreenState extends ConsumerState<NetworkScreen> {
   int _selectedWanIndex = 0;
+  int _selectedWifiIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final opticalAsync = ref.watch(opticalParameterProvider);
     final wanAsync = ref.watch(wanDetailsProvider);
+    final deviceAsync = ref.watch(deviceInfoProvider);
+    final wifiAsync = ref.watch(wifiParameterProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -30,6 +33,8 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
             onPressed: () {
               ref.invalidate(opticalParameterProvider);
               ref.invalidate(wanDetailsProvider);
+              ref.invalidate(deviceInfoProvider);
+              ref.invalidate(wifiParameterProvider);
             },
           ),
         ],
@@ -38,10 +43,75 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
         onRefresh: () async {
           ref.invalidate(opticalParameterProvider);
           ref.invalidate(wanDetailsProvider);
+          ref.invalidate(deviceInfoProvider);
+          ref.invalidate(wifiParameterProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // --- Device Information ---
+            const Padding(
+              padding: EdgeInsets.only(left: 8, bottom: 8),
+              child: Text(
+                'Device Information',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            Card(
+              elevation: 0,
+              color: isDark
+                  ? const Color(0xFF16161E)
+                  : theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDark
+                      ? Colors.white.withAlpha(12)
+                      : Colors.black.withAlpha(12),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: deviceAsync.when(
+                  skipLoadingOnRefresh: false,
+                  loading: () => _buildWanSkeleton(
+                    context,
+                    isDark,
+                  ), // Re-using standard row skeleton
+                  error: (e, st) => Text('Failed to load device data: $e'),
+                  data: (device) {
+                    if (device == null)
+                      return const Text('No device data available');
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildDetailRow(context, 'Device ID', device.deviceId),
+                        _buildDetailRow(context, 'Model', device.modelName),
+                        _buildDetailRow(context, 'Vendor', device.vendorName),
+                        _buildDetailRow(
+                          context,
+                          'MAC Address',
+                          device.macAddress,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Hardware Version',
+                          device.hardwareVersion,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Software Version',
+                          device.softwareVersion,
+                        ),
+                        _buildDetailRow(context, 'Status', device.onlineStatus),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
             const Padding(
               padding: EdgeInsets.only(left: 8, bottom: 8),
               child: Text(
@@ -180,6 +250,137 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
 
             const SizedBox(height: 24),
 
+            // --- WiFi Parameters ---
+            const Padding(
+              padding: EdgeInsets.only(left: 8, bottom: 8),
+              child: Text(
+                'WiFi Configuration',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            Card(
+              elevation: 0,
+              color: isDark
+                  ? const Color(0xFF16161E)
+                  : theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDark
+                      ? Colors.white.withAlpha(12)
+                      : Colors.black.withAlpha(12),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: wifiAsync.when(
+                  skipLoadingOnRefresh: false,
+                  loading: () => _buildWanSkeleton(
+                    context,
+                    isDark,
+                  ), // Reusing standard skeleton
+                  error: (e, st) => Text('Failed to load WiFi data: $e'),
+                  data: (wifiList) {
+                    if (wifiList.isEmpty)
+                      return const Text('No WiFi data available');
+
+                    if (_selectedWifiIndex >= wifiList.length) {
+                      Future.microtask(
+                        () => setState(() => _selectedWifiIndex = 0),
+                      );
+                      return const SizedBox.shrink();
+                    }
+
+                    final wifi = wifiList[_selectedWifiIndex];
+
+                    // The SSID might be empty in some placeholder records, so we fall back to ID
+                    final displayName = wifi.ssid.isNotEmpty
+                        ? wifi.ssid
+                        : 'Radio ${wifi.id}';
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Select WiFi Radio',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: _selectedWifiIndex,
+                              isExpanded: true,
+                              items: List.generate(wifiList.length, (index) {
+                                final w = wifiList[index];
+                                final name = w.ssid.isNotEmpty
+                                    ? w.ssid
+                                    : 'Radio ${w.id}';
+                                return DropdownMenuItem(
+                                  value: index,
+                                  child: Text(
+                                    name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }),
+                              onChanged: (val) {
+                                if (val != null)
+                                  setState(() => _selectedWifiIndex = val);
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildDetailRow(context, 'SSID', wifi.ssid),
+                        _buildDetailRow(context, 'Status', wifi.status),
+                        _buildDetailRow(
+                          context,
+                          'Radio Enabled',
+                          wifi.radioEnabled,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Channels In Use',
+                          wifi.channelsInUse,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Possible Channels',
+                          wifi.possibleChannels,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Transmit Power',
+                          '${wifi.transmitPower}%',
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Max Bit Rate',
+                          wifi.maxBitRate,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Beacon Type',
+                          wifi.beaconType,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          'Visible (Broadcast)',
+                          wifi.ssidAdvertisementEnabled ? 'Yes' : 'No',
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+
             const Padding(
               padding: EdgeInsets.only(left: 8, bottom: 8),
               child: Text(
@@ -299,6 +500,8 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
+
             const SizedBox(height: 24),
           ],
         ),
