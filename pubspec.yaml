@@ -1,7 +1,7 @@
 name: kvman
 description: "An Unofficial client app for Kerala Vision Broadband"
 publish_to: 'none'
-version: 1.0.2+6
+version: 1.1.0+7
 
 environment:
   sdk: ^3.13.2
