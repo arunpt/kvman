@@ -1,3 +1,4 @@
+import 'package:kvman/features/billing/billing_provider.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final planAsync = ref.watch(currentPlanProvider);
     final customerDetailAsync = ref.watch(customerDetailProvider);
+    final futurePlanAsync = ref.watch(futurePlanListProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -59,6 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             await Future.wait([
               ref.refresh(currentPlanProvider.future),
               ref.refresh(customerDetailProvider.future),
+              ref.refresh(futurePlanListProvider.future),
             ]);
           } catch (_) {}
         },
@@ -75,12 +78,119 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }
 
             final customerData = customerDetailAsync.asData?.value;
+            final hasFuturePlan =
+                (futurePlanAsync
+                        .asData
+                        ?.value
+                        ?.accountFuturePlanList
+                        .isNotEmpty ??
+                    false) ||
+                (futurePlanAsync
+                        .asData
+                        ?.value
+                        ?.futureVasPlanDetail
+                        .isNotEmpty ??
+                    false);
 
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
                 if (customerData != null)
-                  _buildSmartBanner(context, customerData, isDark),
+                  _buildSmartBanner(
+                    context,
+                    customerData,
+                    isDark,
+                    hasFuturePlan,
+                  ),
+                futurePlanAsync.when(
+                  data: (futureData) {
+                    if (futureData == null ||
+                        (futureData.accountFuturePlanList.isEmpty &&
+                            futureData.futureVasPlanDetail.isEmpty)) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final firstPlanName =
+                        futureData.accountFuturePlanList.isNotEmpty
+                        ? futureData.accountFuturePlanList.first.name
+                        : (futureData.futureVasPlanDetail.isNotEmpty
+                              ? futureData.futureVasPlanDetail.first.vasPlanName
+                              : 'Queued Plan');
+
+                    DateTime? actDate;
+                    if (futureData.accountFuturePlanList.isNotEmpty) {
+                      actDate =
+                          futureData.accountFuturePlanList.first.activationDate;
+                    }
+
+                    final dateStr = actDate != null
+                        ? DateFormat('MMM dd, yyyy').format(actDate)
+                        : 'Pending';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withAlpha(isDark ? 50 : 30),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.blueAccent.withAlpha(50),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.next_plan, color: Colors.blueAccent),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Up Next: $firstPlanName',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: Colors.blueAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Activates on: $dateStr',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.blueAccent.withAlpha(200),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 0,
+                              ),
+                              minimumSize: const Size(0, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              context.push(AppRoutes.upcomingPlans);
+                            },
+                            child: const Text(
+                              'View',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
                 _buildPlanCard(context, planData, isDark),
                 const SizedBox(height: 16),
 
@@ -136,6 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context,
     CustomerDetail customer,
     bool isDark,
+    bool hasFuturePlan,
   ) {
     final theme = Theme.of(context);
 
@@ -143,7 +254,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         customer.primaryAllocatedQuotaMB > 0 &&
         (customer.primaryUsedQuotaMB / customer.primaryAllocatedQuotaMB) >= 0.9;
     final bool isExpiringSoon =
-        customer.planRemainingDays > 0 && customer.planRemainingDays <= 3;
+        !hasFuturePlan &&
+        customer.planRemainingDays > 0 &&
+        customer.planRemainingDays <= 3;
     final bool isExpired = customer.planRemainingDays <= 0;
 
     if (!isLowData && !isExpiringSoon && !isExpired) {
@@ -161,7 +274,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bgColor = Colors.red.withAlpha(isDark ? 50 : 30);
       fgColor = Colors.red;
     } else if (isExpiringSoon) {
-      message = 'Your plan expires in ${customer.planRemainingDays} days.';
+      message =
+          'Your plan expires in ${customer.planRemainingDays} day${customer.planRemainingDays > 1 ? "s" : ""}.';
       icon = Icons.warning_amber_rounded;
       bgColor = Colors.orange.withAlpha(isDark ? 50 : 30);
       fgColor = Colors.orange.shade800;
@@ -808,10 +922,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            usedDataStr,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                usedDataStr,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 2),

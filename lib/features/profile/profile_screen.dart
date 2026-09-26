@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kvman/features/auth/auth_notifier.dart';
@@ -188,6 +189,14 @@ class ProfileScreen extends ConsumerWidget {
             const Divider(),
             const SizedBox(height: 16),
             _buildDetailRow(context, 'User ID', customer.userId),
+            _buildDetailRow(
+              context,
+              'Activation Date',
+              customer.customerActivationDate != null
+                  ? DateFormat('MMM dd, yyyy')
+                        .format(customer.customerActivationDate!)
+                  : 'N/A',
+            ),
             _buildDetailRow(
               context,
               'MAC Address',
