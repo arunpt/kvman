@@ -1,3 +1,4 @@
+import 'package:kvman/core/utils/date_utils.dart';
 import 'package:intl/intl.dart';
 
 class VasPlan {
@@ -128,25 +129,14 @@ class PlanHistoryItem {
   });
 
   factory PlanHistoryItem.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(String? dateStr) {
-      if (dateStr != null && dateStr.contains('/Date(')) {
-        final match = RegExp(r'/Date\((\d+)\)/').firstMatch(dateStr);
-        if (match != null && match.groupCount >= 1) {
-          final timestamp = int.tryParse(match.group(1)!);
-          if (timestamp != null) {
-            return DateTime.fromMillisecondsSinceEpoch(timestamp);
-          }
-        }
-      }
-      return null;
-    }
-
     return PlanHistoryItem(
       planId: json['PlanId'] ?? 0,
       name: json['Name'] ?? '',
       planType: json['PlanType'] ?? '',
-      activationDate: parseDate(json['ActivationDate'] as String?),
-      expiryDate: parseDate(json['ExpiryDate'] as String?),
+      activationDate: KVDateUtils.parseDotNetDate(
+        json['ActivationDate']?.toString(),
+      ),
+      expiryDate: KVDateUtils.parseDotNetDate(json['ExpiryDate']?.toString()),
       remainQuota: json['RemainQuota'] ?? '',
       usedQuota: json['UsedQuota'] ?? '',
     );
@@ -160,5 +150,108 @@ class PlanHistoryItem {
   String get formattedExpiryDate {
     if (expiryDate == null) return '-';
     return DateFormat('MMM dd, yyyy').format(expiryDate!);
+  }
+}
+
+class FuturePlan {
+  final int planId;
+  final String name;
+  final int validity;
+  final String validityMode;
+  final DateTime? activationDate;
+  final DateTime? expiryDate;
+  final String voucherSrNo;
+  final String description;
+
+  FuturePlan({
+    required this.planId,
+    required this.name,
+    required this.validity,
+    required this.validityMode,
+    required this.activationDate,
+    required this.expiryDate,
+    required this.voucherSrNo,
+    required this.description,
+  });
+
+  factory FuturePlan.fromJson(Map<String, dynamic> json) {
+    return FuturePlan(
+      planId: json['PlanId'] ?? 0,
+      name: json['Name'] ?? '',
+      validity: json['Validity'] ?? 0,
+      validityMode: json['ValidityMode'] ?? '',
+      activationDate: KVDateUtils.parseDotNetDate(
+        json['ActivationDate']?.toString(),
+      ),
+      expiryDate: KVDateUtils.parseDotNetDate(json['ExpiryDate']?.toString()),
+      voucherSrNo: json['VoucherSrNo']?.toString() ?? '',
+      description: json['DESCRIPTION']?.toString() ?? '',
+    );
+  }
+}
+
+class FutureVasPlan {
+  final String vasPlanName;
+  final num vasPlanMRP;
+  final DateTime? expiryDate;
+  final String vasConfigName;
+  final int totalDaysOfPlan;
+  final int noOfDaysRemaining;
+
+  FutureVasPlan({
+    required this.vasPlanName,
+    required this.vasPlanMRP,
+    required this.expiryDate,
+    required this.vasConfigName,
+    required this.totalDaysOfPlan,
+    required this.noOfDaysRemaining,
+  });
+
+  factory FutureVasPlan.fromJson(Map<String, dynamic> json) {
+    return FutureVasPlan(
+      vasPlanName: json['VasPlanName'] ?? '',
+      vasPlanMRP: json['VasPlanMRP'] as num? ?? 0,
+      expiryDate: KVDateUtils.parseDotNetDate(json['ExpiryDate']?.toString()),
+      vasConfigName: json['Vasconfigname'] ?? '',
+      totalDaysOfPlan: json['TotalOfDaysOfPlan'] ?? 0,
+      noOfDaysRemaining: json['NoOfDaysRemaining'] ?? 0,
+    );
+  }
+}
+
+class FuturePlanListResponse {
+  final int futurePlanActivation;
+  final int futurePlanCancel;
+  final List<FuturePlan> accountFuturePlanList;
+  final List<FutureVasPlan> futureVasPlanDetail;
+
+  FuturePlanListResponse({
+    required this.futurePlanActivation,
+    required this.futurePlanCancel,
+    required this.accountFuturePlanList,
+    required this.futureVasPlanDetail,
+  });
+
+  factory FuturePlanListResponse.fromJson(Map<String, dynamic> json) {
+    List<FuturePlan> plans = [];
+    if (json['AccountFuturePlanList'] != null) {
+      plans = (json['AccountFuturePlanList'] as List)
+          .map((e) => FuturePlan.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    List<FutureVasPlan> vasPlans = [];
+    if (json['FutureVasPlanDetail'] != null) {
+      vasPlans = (json['FutureVasPlanDetail'] as List)
+          .map((e) => FutureVasPlan.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    return FuturePlanListResponse(
+      futurePlanActivation: json['FuturePlanActivation'] ?? 0,
+      futurePlanCancel: json['FuturePlanCancel'] ?? 0,
+      accountFuturePlanList: plans,
+      futureVasPlanDetail: vasPlans,
+    );
   }
 }

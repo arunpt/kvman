@@ -1,3 +1,5 @@
+import 'package:kvman/core/utils/date_utils.dart';
+
 class CustomerDetail {
   final String userId;
   final String name;
@@ -65,30 +67,22 @@ class CustomerDetail {
           int.tryParse(json['PrimaryUnusedQuotaMB']?.toString() ?? '') ?? 0,
       primaryUsedQuotaMB:
           int.tryParse(json['PrimaryUsedQuotaMB']?.toString() ?? '') ?? 0,
-      customerActivationDate: _parseDotNetDate(
-        json['CustomerActivationDate']?.toString() ?? '',
+      customerActivationDate: KVDateUtils.parseDotNetDate(
+        json['CustomerActivationDate']?.toString(),
+        isUtc: true,
       ),
-      planActivationDate: _parseDotNetDate(
-        json['ActivationDate']?.toString() ?? '',
+      planActivationDate: KVDateUtils.parseDotNetDate(
+        json['ActivationDate']?.toString(),
+        isUtc: true,
       ),
-      planExpiryDate: _parseDotNetDate(json['ExpiryDate']?.toString() ?? ''),
+      planExpiryDate: KVDateUtils.parseDotNetDate(
+        json['ExpiryDate']?.toString(),
+        isUtc: true,
+      ),
       planRemainingDays:
           int.tryParse(json['remainingDay']?.toString() ?? '') ?? 0,
       planActiveDays: int.tryParse(json['activeDay']?.toString() ?? '') ?? 0,
       planUsedDays: int.tryParse(json['UsedDays']?.toString() ?? '') ?? 0,
-    );
-  }
-
-  static DateTime? _parseDotNetDate(dynamic value) {
-    if (value == null) return null;
-
-    final match = RegExp(r'/Date\((-?\d+)\)/').firstMatch(value.toString());
-
-    if (match == null) return null;
-
-    return DateTime.fromMillisecondsSinceEpoch(
-      int.parse(match.group(1)!),
-      isUtc: true,
     );
   }
 }

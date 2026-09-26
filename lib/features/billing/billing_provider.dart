@@ -90,3 +90,11 @@ final vasPlansProvider = FutureProvider<List<VasPlan>>((ref) async {
   final repo = ref.watch(billingRepositoryProvider);
   return repo.getVasPlans();
 });
+
+// --- Future Plan List Provider ---
+final futurePlanListProvider = FutureProvider<FuturePlanListResponse?>((
+  ref,
+) async {
+  final repo = ref.watch(billingRepositoryProvider);
+  return repo.getFuturePlanList();
+});

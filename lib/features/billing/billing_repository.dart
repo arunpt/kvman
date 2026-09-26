@@ -133,4 +133,25 @@ class BillingRepository {
       throw Exception('Failed to download invoice');
     }
   }
+
+  Future<FuturePlanListResponse?> getFuturePlanList() async {
+    try {
+      final response = await _dio.post('/FuturePlanList');
+      final data = response.data;
+
+      if (data != null && data is Map<String, dynamic>) {
+        final returnCode = data['ReturnCode'];
+        if (returnCode != null && returnCode != 0) {
+          throw Exception(
+            data['ReturnMessage']?.toString() ?? 'Failed to load future plans',
+          );
+        }
+        return FuturePlanListResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      logger.e('Failed to fetch future plans: $e');
+      throw Exception('Failed to fetch future plans');
+    }
+  }
 }

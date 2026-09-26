@@ -1,3 +1,5 @@
+import 'package:kvman/core/utils/date_utils.dart';
+
 class AvailablePlan {
   final String name;
   final String speed;
@@ -113,17 +115,9 @@ class CurrentVasPlan {
     Map<String, dynamic> json, {
     Map<String, String>? remarksMap,
   }) {
-    DateTime? parsedExpiry;
-    final dateStr = json['ExpiryDate']?.toString();
-    if (dateStr != null) {
-      final match = RegExp(r'/Date\((-?\d+)\)/').firstMatch(dateStr);
-      if (match != null) {
-        final ms = int.tryParse(match.group(1)!);
-        if (ms != null) {
-          parsedExpiry = DateTime.fromMillisecondsSinceEpoch(ms);
-        }
-      }
-    }
+    final parsedExpiry = KVDateUtils.parseDotNetDate(
+      json['ExpiryDate']?.toString(),
+    );
 
     final vasName = json['VasPlanName']?.toString() ?? '';
     String? remark = json['VASPlanRemark']?.toString();

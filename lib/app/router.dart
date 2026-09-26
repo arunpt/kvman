@@ -1,3 +1,4 @@
+import 'package:kvman/features/billing/upcoming_plans_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const billing = '/billing';
   static const transactionHistory = '/billing/transactions';
   static const planHistory = '/billing/plan-history';
+  static const upcomingPlans = '/upcoming-plans';
   static const browsePlans = '/browse-plans';
 }
 
@@ -101,6 +103,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.planHistory,
         builder: (context, state) => const PlanHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.upcomingPlans,
+        builder: (context, state) => const UpcomingPlansScreen(),
       ),
       GoRoute(
         path: AppRoutes.browsePlans,
